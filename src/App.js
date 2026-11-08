@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import WelcomeRoleSelect from './components/WelcomeRoleSelect/WelcomeRoleSelect';
 import BoarderLogin from './components/BoarderLogin/BoarderLogin';
@@ -42,8 +43,6 @@ const INITIAL_OWNER_LISTINGS = [
 ];
 
 const REQUESTER_THREAD_ID = 'maria';
-
-const PRE_DASHBOARD_SCREENS = new Set(['owner-login', 'owner-register', 'owner-credentials', 'owner-credentials-review']);
 
 /* Append a message to a thread and move that thread to the top of the list.
    `incoming` marks a message from the other side, which adds to the unread count. */
@@ -95,8 +94,15 @@ const deliver = (threads, matches, create, text, from) => {
 
 const accountKey = (email = '') => email.trim().toLowerCase();
 
+/* Layout route that renders its child routes only when `allowed`, otherwise redirects.
+   Sessions live in memory, so a refresh or a stale back/forward entry lands on a safe screen. */
+function Guard({ allowed, redirectTo }) {
+  return allowed ? <Outlet /> : <Navigate to={redirectTo} replace />;
+}
+
 function App() {
-  const [screen, setScreen] = useState('welcome');
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const [boarder, setBoarder] = useState(null);
   const [owner, setOwner] = useState(null);
@@ -125,7 +131,7 @@ function App() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [screen]);
+  }, [pathname]);
 
   const ownerName = ownerProfile.name;
 
@@ -173,24 +179,26 @@ function App() {
     return request ? { ...t, contact: request.by, requester: request.by } : t;
   }), [ownerThreads, reviewRequests, boarderName]);
 
-  const go = setScreen;
-
-  const logout = () => {
+  // React Router runs navigations as transitions. Ending a session in that same transition keeps the
+  // route guards from seeing the cleared session on the old screen and redirecting somewhere else first.
+  const leaveSession = (path) => startTransition(() => {
     setBoarder(null);
     setOwner(null);
     setSelectedId(null);
     setActiveThreadId(null);
-    go('welcome');
-  };
+    navigate(path);
+  });
+
+  const logout = () => leaveSession('/');
 
   const openPost = (listing, role = 'boarder') => {
     setSelectedId(listing.id);
-    go(role === 'owner' ? 'owner-post-details' : 'post-details');
+    navigate(role === 'owner' ? '/owner-post-details' : '/post-details');
   };
 
   const openReviews = (listing, role = 'boarder') => {
     setSelectedId(listing.id);
-    go(role === 'owner' ? 'owner-reviews' : 'reviews');
+    navigate(role === 'owner' ? '/owner-reviews' : '/reviews');
   };
 
   // Boarder → Messages, optionally opening (or starting) the conversation about a listing.
@@ -203,12 +211,12 @@ function App() {
     } else {
       setActiveThreadId(null);
     }
-    go('boarder-messages');
+    navigate('/boarder-messages');
   };
 
   const openEditor = (listing = null) => {
     setEditingListing(listing);
-    go('owner-post');
+    navigate('/owner-post');
   };
 
   // `from` is 'me' for typed/quick-reply messages and 'bot' for the boarder's auto-reply helper.
@@ -251,7 +259,7 @@ function App() {
       ? { ...p, name, ...(phone && { phone }) }
       : blankOwnerProfile({ name, email, phone })));
     setSignup(null);
-    go(needsCredentials ? 'owner-credentials' : 'owner-home');
+    navigate(needsCredentials ? '/send-credentials' : '/owner-home');
   };
 
   // Save the new account. New owners are signed in and sent to the camera step; boarders go to their login screen.
@@ -265,7 +273,7 @@ function App() {
       return;
     }
     setSignup({ role, email });
-    go('boarder-login');
+    navigate('/boarder-login');
   };
 
   // Recovery never reveals whether an email is registered; unregistered emails already log in with any password.
@@ -288,391 +296,450 @@ function App() {
     : '');
 
   const boarderNav = {
-    onHome: () => go('boarder-home'),
+    onHome: () => navigate('/boarder-home'),
     onOpenMessages: () => openBoarderMessages(),
-    onOpenProfile: () => go('boarder-profile'),
+    onOpenProfile: () => navigate('/boarder-profile'),
     onLogout: logout,
   };
 
   const ownerNav = {
-    onHome: () => go('owner-home'),
+    onHome: () => navigate('/owner-home'),
     onPost: () => openEditor(null),
-    onOpenMessages: () => go('owner-messages'),
-    onOpenProfile: () => go('owner-profile'),
+    onOpenMessages: () => navigate('/owner-messages'),
+    onOpenProfile: () => navigate('/owner-profile'),
     onLogout: logout,
   };
 
-  // An owner who still needs to send credentials can't reach the dashboard or any other owner screen.
-  const activeScreen = owner?.needsCredentials && screen.startsWith('owner-') && !PRE_DASHBOARD_SCREENS.has(screen)
-    ? 'owner-credentials'
-    : screen;
+  const reservedListing = reservation && allListings.find((l) => l.id === reservation.listingId);
 
-  switch (activeScreen) {
-    case 'boarder-login':
-      return (
-        <BoarderLogin
-          initialEmail={signupFor('boarder')?.email}
-          notice={signupNotice('boarder')}
-          onBack={() => { setSignup(null); go('welcome'); }}
-          onLogin={({ email, password }) => {
-            const account = findAccount('boarder', email, password);
-            const name = account?.fullName ?? displayNameFor({ email, role: 'boarder' });
-            setBoarder({ email, name });
-            // Same boarder logging back in keeps their edits; anyone else starts from a blank profile.
-            setBoarderProfile((p) => (accountKey(p.email) === accountKey(email)
-              ? { ...p, name, ...(account && { phone: account.contactNumber }) }
-              : blankBoarderProfile({ name, email, phone: account?.contactNumber })));
-            setSignup(null);
-            go('boarder-home');
-          }}
-          onResetPassword={resetPassword('boarder')}
-          onCreateAccount={() => go('boarder-register')}
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={(
+          <WelcomeRoleSelect
+            onSelectBoarder={() => navigate('/boarder-login')}
+            onSelectOwner={() => navigate('/owner-login')}
+          />
+        )}
+      />
+
+      <Route
+        path="/boarder-login"
+        element={(
+          <BoarderLogin
+            initialEmail={signupFor('boarder')?.email}
+            notice={signupNotice('boarder')}
+            onBack={() => { setSignup(null); navigate('/'); }}
+            onLogin={({ email, password }) => {
+              const account = findAccount('boarder', email, password);
+              const name = account?.fullName ?? displayNameFor({ email, role: 'boarder' });
+              setBoarder({ email, name });
+              // Same boarder logging back in keeps their edits; anyone else starts from a blank profile.
+              setBoarderProfile((p) => (accountKey(p.email) === accountKey(email)
+                ? { ...p, name, ...(account && { phone: account.contactNumber }) }
+                : blankBoarderProfile({ name, email, phone: account?.contactNumber })));
+              setSignup(null);
+              navigate('/boarder-home');
+            }}
+            onResetPassword={resetPassword('boarder')}
+            onCreateAccount={() => navigate('/boarder-register')}
+          />
+        )}
+      />
+
+      <Route
+        path="/boarder-register"
+        element={(
+          <BoarderRegister
+            onBack={() => navigate('/')}
+            onBackToLogin={() => navigate('/boarder-login')}
+            onRegister={register('boarder')}
+          />
+        )}
+      />
+
+      <Route
+        path="/owner-login"
+        element={(
+          <OwnerLogin
+            initialEmail={signupFor('owner')?.email}
+            notice={signupNotice('owner')}
+            onBack={() => { setSignup(null); navigate('/'); }}
+            onSubmit={({ email, password }) => {
+              const account = findAccount('owner', email, password);
+              startOwnerSession({
+                email,
+                name: account?.fullName ?? displayNameFor({ email, role: 'owner' }),
+                phone: account?.contactNumber,
+              });
+            }}
+            onResetPassword={resetPassword('owner')}
+            onCreateAccount={() => navigate('/owner-register')}
+          />
+        )}
+      />
+
+      <Route
+        path="/owner-register"
+        element={(
+          <OwnerRegister
+            onBack={() => navigate('/')}
+            onBackToLogin={() => navigate('/owner-login')}
+            onRegister={register('owner')}
+          />
+        )}
+      />
+
+      {/* Boarder screens need a logged-in boarder. */}
+      <Route element={<Guard allowed={!!boarder} redirectTo="/" />}>
+        <Route
+          path="/boarder-home"
+          element={(
+            <BoarderHome
+              listings={feedListings}
+              session={boarderSession}
+              onOpenMessages={openBoarderMessages}
+              onViewPost={(l) => openPost(l)}
+              onOpenProfile={boarderNav.onOpenProfile}
+              onLogout={logout}
+            />
+          )}
         />
-      );
 
-    case 'boarder-register':
-      return (
-        <BoarderRegister
-          onBack={() => go('welcome')}
-          onBackToLogin={() => go('boarder-login')}
-          onRegister={register('boarder')}
+        <Route
+          path="/boarder-messages"
+          element={(
+            <Messages
+              key={activeThreadId ?? 'inbox'}
+              session={boarderSession}
+              nav={boarderNav}
+              threads={boarderThreadsView}
+              initialThreadId={activeThreadId ?? undefined}
+              reviewRequests={requestStatuses}
+              listingNames={listingNames}
+              listings={allListings}
+              onSend={sendMessage('boarder')}
+              onOpenThread={markBoarderRead}
+              onWriteReview={(listingId) => { setSelectedId(listingId); navigate('/write-review'); }}
+            />
+          )}
         />
-      );
 
-    case 'owner-login':
-      return (
-        <OwnerLogin
-          initialEmail={signupFor('owner')?.email}
-          notice={signupNotice('owner')}
-          onBack={() => { setSignup(null); go('welcome'); }}
-          onSubmit={({ email, password }) => {
-            const account = findAccount('owner', email, password);
-            startOwnerSession({
-              email,
-              name: account?.fullName ?? displayNameFor({ email, role: 'owner' }),
-              phone: account?.contactNumber,
-            });
-          }}
-          onResetPassword={resetPassword('owner')}
-          onCreateAccount={() => go('owner-register')}
+        <Route
+          path="/boarder-profile"
+          element={(
+            <Profile
+              session={boarderSession}
+              nav={boarderNav}
+              profile={boarderProfile}
+              reservation={reservedListing ? { listing: reservedListing, status: reservation.status } : null}
+              myReviews={Object.entries(submittedReviews).flatMap(([id, reviews]) =>
+                reviews.map((review) => ({ listing: allListings.find((l) => l.id === id), review })))}
+              ownersMessaged={boarderThreadsView.map((t) => ({ name: t.contact, color: t.color }))}
+              onOpenListing={(l) => openPost(l)}
+              onEditProfile={() => navigate('/boarder-edit-profile')}
+            />
+          )}
         />
-      );
 
-    case 'owner-register':
-      return (
-        <OwnerRegister
-          onBack={() => go('welcome')}
-          onBackToLogin={() => go('owner-login')}
-          onRegister={register('owner')}
+        <Route
+          path="/boarder-edit-profile"
+          element={(
+            <EditProfile
+              session={boarderSession}
+              nav={boarderNav}
+              profile={boarderProfile}
+              onCancel={() => navigate('/boarder-profile')}
+              onSave={(profile) => { setBoarderProfile(profile); navigate('/boarder-profile'); }}
+            />
+          )}
         />
-      );
 
-    case 'owner-credentials':
-      return (
-        <SendCredentials
-          onBack={() => { setOwner(null); go('owner-login'); }}
-          onSend={() => {
-            setOwnerCredentials((prev) => ({ ...prev, [accountKey(owner.email)]: 'review' }));
-            setOwner((o) => ({ ...o, needsCredentials: false }));
-            go('owner-credentials-review');
-          }}
+        {/* Listing screens need a selected listing (it is lost on a page refresh). */}
+        <Route element={<Guard allowed={!!selectedListing} redirectTo="/boarder-home" />}>
+          <Route
+            path="/post-details"
+            element={(
+              <PostDetails
+                listing={selectedListing}
+                reviewStats={statsFor(selectedListing)}
+                reserved={reservation?.listingId === selectedListing?.id}
+                session={boarderSession}
+                onBack={() => navigate('/boarder-home')}
+                onMessageOwner={openBoarderMessages}
+                onReserve={(l) => {
+                  setReservation({ listingId: l.id, status: 'pending' });
+                  navigate('/reservation-sent');
+                }}
+                onOpenReviews={(l) => openReviews(l)}
+                onOpenMessages={boarderNav.onOpenMessages}
+                onOpenProfile={boarderNav.onOpenProfile}
+                onLogout={logout}
+              />
+            )}
+          />
+
+          <Route
+            path="/reservation-sent"
+            element={(
+              <ReservationSent
+                session={boarderSession}
+                nav={boarderNav}
+                listing={selectedListing}
+                onMessageOwner={openBoarderMessages}
+                onBackHome={() => navigate('/boarder-home')}
+              />
+            )}
+          />
+
+          <Route
+            path="/reviews"
+            element={(
+              <Reviews
+                session={boarderSession}
+                nav={boarderNav}
+                listing={selectedListing}
+                summary={statsFor(selectedListing)}
+                requestStatus={requestStatuses[selectedListing?.id] ?? 'none'}
+                onBack={() => navigate('/post-details')}
+                onRequestReview={() => {
+                  setReviewRequests((prev) => ({ ...prev, [selectedListing.id]: { status: 'pending', by: boarderName } }));
+                  navigate('/review-request-sent');
+                }}
+                onViewRequest={() => navigate('/review-request-sent')}
+                onWriteReview={() => navigate('/write-review')}
+              />
+            )}
+          />
+
+          <Route
+            path="/review-request-sent"
+            element={(
+              <ReviewRequestSent
+                session={boarderSession}
+                nav={boarderNav}
+                listing={selectedListing}
+                onBackToPost={() => navigate('/post-details')}
+                onPreviewAccepted={() => { setRequestStatus(selectedListing.id, 'accepted'); navigate('/write-review'); }}
+                onPreviewDeclined={() => { setRequestStatus(selectedListing.id, 'declined'); navigate('/review-declined'); }}
+              />
+            )}
+          />
+
+          <Route
+            path="/review-declined"
+            element={(
+              <ReviewRequestDeclined
+                session={boarderSession}
+                nav={boarderNav}
+                listing={selectedListing}
+                onBackToPost={() => navigate('/post-details')}
+                onMessageOwner={openBoarderMessages}
+              />
+            )}
+          />
+
+          <Route
+            path="/write-review"
+            element={(
+              <WriteReview
+                session={boarderSession}
+                nav={boarderNav}
+                listing={selectedListing}
+                onCancel={() => navigate('/reviews')}
+                onSubmit={({ rating, tags, text }) => {
+                  const review = {
+                    id: `mine-${Date.now()}`, author: boarderName, color: '#e5383b', when: 'Just now', rating, tags, text,
+                  };
+                  setSubmittedReviews((prev) => ({ ...prev, [selectedListing.id]: [review, ...(prev[selectedListing.id] ?? [])] }));
+                  setRequestStatus(selectedListing.id, 'reviewed');
+                  setLastReview(review);
+                  navigate('/review-submitted');
+                }}
+              />
+            )}
+          />
+
+          <Route element={<Guard allowed={!!lastReview} redirectTo="/reviews" />}>
+            <Route
+              path="/review-submitted"
+              element={(
+                <ReviewSubmitted
+                  session={boarderSession}
+                  nav={boarderNav}
+                  listing={selectedListing}
+                  review={lastReview}
+                  onSeeReviews={() => navigate('/reviews')}
+                  onBackHome={() => navigate('/boarder-home')}
+                />
+              )}
+            />
+          </Route>
+        </Route>
+      </Route>
+
+      {/* Owner screens need a logged-in owner. */}
+      <Route element={<Guard allowed={!!owner} redirectTo="/" />}>
+        <Route
+          path="/send-credentials"
+          element={(
+            <SendCredentials
+              onBack={() => startTransition(() => { setOwner(null); navigate('/owner-login'); })}
+              onSend={() => {
+                setOwnerCredentials((prev) => ({ ...prev, [accountKey(owner.email)]: 'review' }));
+                setOwner((o) => ({ ...o, needsCredentials: false }));
+                navigate('/owner-credentials-review');
+              }}
+            />
+          )}
         />
-      );
 
-    case 'owner-credentials-review':
-      return <CredentialsUnderReview onContinue={() => go('owner-home')} />;
-
-    case 'boarder-home':
-      return (
-        <BoarderHome
-          listings={feedListings}
-          session={boarderSession}
-          onOpenMessages={openBoarderMessages}
-          onViewPost={(l) => openPost(l)}
-          onOpenProfile={boarderNav.onOpenProfile}
-          onLogout={logout}
+        <Route
+          path="/owner-credentials-review"
+          element={<CredentialsUnderReview onContinue={() => navigate('/owner-home')} />}
         />
-      );
 
-    case 'post-details':
-      if (!selectedListing) return null;
-      return (
-        <PostDetails
-          listing={selectedListing}
-          reviewStats={statsFor(selectedListing)}
-          reserved={reservation?.listingId === selectedListing.id}
-          session={boarderSession}
-          onBack={() => go('boarder-home')}
-          onMessageOwner={openBoarderMessages}
-          onReserve={(l) => {
-            setReservation({ listingId: l.id, status: 'pending' });
-            go('reservation-sent');
-          }}
-          onOpenReviews={(l) => openReviews(l)}
-          onOpenMessages={boarderNav.onOpenMessages}
-          onOpenProfile={boarderNav.onOpenProfile}
-          onLogout={logout}
-        />
-      );
+        {/* An owner who still needs to send credentials can't reach the dashboard or any other owner screen. */}
+        <Route element={<Guard allowed={!owner?.needsCredentials} redirectTo="/send-credentials" />}>
+          <Route
+            path="/owner-home"
+            element={(
+              <BoarderHome
+                session={ownerSession}
+                listings={feedListings}
+                onViewPost={(l) => openPost(l, 'owner')}
+                onPost={ownerNav.onPost}
+                onOpenMessages={ownerNav.onOpenMessages}
+                onOpenProfile={ownerNav.onOpenProfile}
+                onLogout={logout}
+              />
+            )}
+          />
 
-    case 'reservation-sent':
-      if (!selectedListing) return null;
-      return (
-        <ReservationSent
-          session={boarderSession}
-          nav={boarderNav}
-          listing={selectedListing}
-          onMessageOwner={openBoarderMessages}
-          onBackHome={() => go('boarder-home')}
-        />
-      );
+          <Route element={<Guard allowed={!!selectedListing} redirectTo="/owner-home" />}>
+            <Route
+              path="/owner-post-details"
+              element={(
+                <PostDetails
+                  session={ownerSession}
+                  listing={selectedListing}
+                  reviewStats={statsFor(selectedListing)}
+                  onBack={() => navigate('/owner-home')}
+                  onOpenReviews={(l) => openReviews(l, 'owner')}
+                  onPost={ownerNav.onPost}
+                  onOpenMessages={ownerNav.onOpenMessages}
+                  onOpenProfile={ownerNav.onOpenProfile}
+                  onLogout={logout}
+                />
+              )}
+            />
 
-    case 'reviews':
-      if (!selectedListing) return null;
-      return (
-        <Reviews
-          session={boarderSession}
-          nav={boarderNav}
-          listing={selectedListing}
-          summary={statsFor(selectedListing)}
-          requestStatus={requestStatuses[selectedListing.id] ?? 'none'}
-          onBack={() => go('post-details')}
-          onRequestReview={() => {
-            setReviewRequests((prev) => ({ ...prev, [selectedListing.id]: { status: 'pending', by: boarderName } }));
-            go('review-request-sent');
-          }}
-          onViewRequest={() => go('review-request-sent')}
-          onWriteReview={() => go('write-review')}
-        />
-      );
+            <Route
+              path="/owner-reviews"
+              element={(
+                <Reviews
+                  session={ownerSession}
+                  nav={ownerNav}
+                  listing={selectedListing}
+                  summary={statsFor(selectedListing)}
+                  onBack={() => navigate('/owner-post-details')}
+                />
+              )}
+            />
+          </Route>
 
-    case 'review-request-sent':
-      if (!selectedListing) return null;
-      return (
-        <ReviewRequestSent
-          session={boarderSession}
-          nav={boarderNav}
-          listing={selectedListing}
-          onBackToPost={() => go('post-details')}
-          onPreviewAccepted={() => { setRequestStatus(selectedListing.id, 'accepted'); go('write-review'); }}
-          onPreviewDeclined={() => { setRequestStatus(selectedListing.id, 'declined'); go('review-declined'); }}
-        />
-      );
+          <Route
+            path="/owner-post"
+            element={(
+              <PostEditor
+                key={editingListing?.id ?? 'new'}
+                session={ownerSession}
+                nav={ownerNav}
+                listing={editingListing}
+                ownerName={ownerName}
+                onDiscard={() => navigate(editingListing ? '/owner-profile' : '/owner-home')}
+                onSave={(listing) => {
+                  setOwnerListings((prev) => (prev.some((l) => l.id === listing.id)
+                    ? prev.map((l) => (l.id === listing.id ? listing : l))
+                    : [...prev, listing]));
+                  setSavedListing(listing);
+                  navigate('/post-saved');
+                }}
+              />
+            )}
+          />
 
-    case 'review-declined':
-      if (!selectedListing) return null;
-      return (
-        <ReviewRequestDeclined
-          session={boarderSession}
-          nav={boarderNav}
-          listing={selectedListing}
-          onBackToPost={() => go('post-details')}
-          onMessageOwner={openBoarderMessages}
-        />
-      );
+          <Route element={<Guard allowed={!!savedListing} redirectTo="/owner-home" />}>
+            <Route
+              path="/post-saved"
+              element={(
+                <PostSaved
+                  session={ownerSession}
+                  nav={ownerNav}
+                  listing={savedListing}
+                  onEditAgain={(l) => openEditor(l)}
+                  onViewHome={() => navigate('/owner-home')}
+                />
+              )}
+            />
+          </Route>
 
-    case 'write-review':
-      if (!selectedListing) return null;
-      return (
-        <WriteReview
-          session={boarderSession}
-          nav={boarderNav}
-          listing={selectedListing}
-          onCancel={() => go('reviews')}
-          onSubmit={({ rating, tags, text }) => {
-            const review = {
-              id: `mine-${Date.now()}`, author: boarderName, color: '#e5383b', when: 'Just now', rating, tags, text,
-            };
-            setSubmittedReviews((prev) => ({ ...prev, [selectedListing.id]: [review, ...(prev[selectedListing.id] ?? [])] }));
-            setRequestStatus(selectedListing.id, 'reviewed');
-            setLastReview(review);
-            go('review-submitted');
-          }}
-        />
-      );
+          <Route
+            path="/owner-messages"
+            element={(
+              <Messages
+                session={ownerSession}
+                nav={ownerNav}
+                threads={ownerThreadsView}
+                reviewRequests={requestStatuses}
+                requesterName={boarderName}
+                listingNames={listingNames}
+                onSend={sendMessage('owner')}
+                onOpenThread={markOwnerRead}
+                onAcceptRequest={(listingId) => setRequestStatus(listingId, 'accepted')}
+                onDeclineRequest={(listingId) => setRequestStatus(listingId, 'declined')}
+              />
+            )}
+          />
 
-    case 'review-submitted':
-      if (!selectedListing || !lastReview) return null;
-      return (
-        <ReviewSubmitted
-          session={boarderSession}
-          nav={boarderNav}
-          listing={selectedListing}
-          review={lastReview}
-          onSeeReviews={() => go('reviews')}
-          onBackHome={() => go('boarder-home')}
-        />
-      );
+          <Route
+            path="/owner-profile"
+            element={(
+              <Profile
+                session={ownerSession}
+                nav={ownerNav}
+                profile={ownerProfile}
+                ownerListings={myListings}
+                currentBoarders={ownerThreadsView.map((t) => ({ name: t.contact, color: t.color }))}
+                boarderCount={ownerProfile.boarders}
+                rating={reviewsFor(OWNER_LISTING_IDS[0], submittedReviews[OWNER_LISTING_IDS[0]]).average}
+                credentialsStatus={ownerCredentials[accountKey(owner?.email)] ?? 'review'}
+                onEditListing={(l) => openEditor(l)}
+                onAddListing={() => openEditor(null)}
+                onEditProfile={() => navigate('/owner-edit-profile')}
+              />
+            )}
+          />
 
-    case 'boarder-messages':
-      return (
-        <Messages
-          key={activeThreadId ?? 'inbox'}
-          session={boarderSession}
-          nav={boarderNav}
-          threads={boarderThreadsView}
-          initialThreadId={activeThreadId ?? undefined}
-          reviewRequests={requestStatuses}
-          listingNames={listingNames}
-          listings={allListings}
-          onSend={sendMessage('boarder')}
-          onOpenThread={markBoarderRead}
-          onWriteReview={(listingId) => { setSelectedId(listingId); go('write-review'); }}
-        />
-      );
+          <Route
+            path="/owner-edit-profile"
+            element={(
+              <EditProfile
+                session={ownerSession}
+                nav={ownerNav}
+                profile={ownerProfile}
+                onCancel={() => navigate('/owner-profile')}
+                onSave={(profile) => { setOwnerProfile(profile); navigate('/owner-profile'); }}
+              />
+            )}
+          />
+        </Route>
+      </Route>
 
-    case 'boarder-profile': {
-      const reserved = reservation && allListings.find((l) => l.id === reservation.listingId);
-      return (
-        <Profile
-          session={boarderSession}
-          nav={boarderNav}
-          profile={boarderProfile}
-          reservation={reserved ? { listing: reserved, status: reservation.status } : null}
-          myReviews={Object.entries(submittedReviews).flatMap(([id, reviews]) =>
-            reviews.map((review) => ({ listing: allListings.find((l) => l.id === id), review })))}
-          ownersMessaged={boarderThreadsView.map((t) => ({ name: t.contact, color: t.color }))}
-          onOpenListing={(l) => openPost(l)}
-          onEditProfile={() => go('boarder-edit-profile')}
-        />
-      );
-    }
-
-    case 'boarder-edit-profile':
-      return (
-        <EditProfile
-          session={boarderSession}
-          nav={boarderNav}
-          profile={boarderProfile}
-          onCancel={() => go('boarder-profile')}
-          onSave={(profile) => { setBoarderProfile(profile); go('boarder-profile'); }}
-        />
-      );
-
-    case 'owner-home':
-      return (
-        <BoarderHome
-          session={ownerSession}
-          listings={feedListings}
-          onViewPost={(l) => openPost(l, 'owner')}
-          onPost={ownerNav.onPost}
-          onOpenMessages={ownerNav.onOpenMessages}
-          onOpenProfile={ownerNav.onOpenProfile}
-          onLogout={logout}
-        />
-      );
-
-    case 'owner-post-details':
-      if (!selectedListing) return null;
-      return (
-        <PostDetails
-          session={ownerSession}
-          listing={selectedListing}
-          reviewStats={statsFor(selectedListing)}
-          onBack={() => go('owner-home')}
-          onOpenReviews={(l) => openReviews(l, 'owner')}
-          onPost={ownerNav.onPost}
-          onOpenMessages={ownerNav.onOpenMessages}
-          onOpenProfile={ownerNav.onOpenProfile}
-          onLogout={logout}
-        />
-      );
-
-    case 'owner-reviews':
-      if (!selectedListing) return null;
-      return (
-        <Reviews
-          session={ownerSession}
-          nav={ownerNav}
-          listing={selectedListing}
-          summary={statsFor(selectedListing)}
-          onBack={() => go('owner-post-details')}
-        />
-      );
-
-    case 'owner-post':
-      return (
-        <PostEditor
-          key={editingListing?.id ?? 'new'}
-          session={ownerSession}
-          nav={ownerNav}
-          listing={editingListing}
-          ownerName={ownerName}
-          onDiscard={() => go(editingListing ? 'owner-profile' : 'owner-home')}
-          onSave={(listing) => {
-            setOwnerListings((prev) => (prev.some((l) => l.id === listing.id)
-              ? prev.map((l) => (l.id === listing.id ? listing : l))
-              : [...prev, listing]));
-            setSavedListing(listing);
-            go('post-saved');
-          }}
-        />
-      );
-
-    case 'post-saved':
-      if (!savedListing) return null;
-      return (
-        <PostSaved
-          session={ownerSession}
-          nav={ownerNav}
-          listing={savedListing}
-          onEditAgain={(l) => openEditor(l)}
-          onViewHome={() => go('owner-home')}
-        />
-      );
-
-    case 'owner-messages':
-      return (
-        <Messages
-          session={ownerSession}
-          nav={ownerNav}
-          threads={ownerThreadsView}
-          reviewRequests={requestStatuses}
-          requesterName={boarderName}
-          listingNames={listingNames}
-          onSend={sendMessage('owner')}
-          onOpenThread={markOwnerRead}
-          onAcceptRequest={(listingId) => setRequestStatus(listingId, 'accepted')}
-          onDeclineRequest={(listingId) => setRequestStatus(listingId, 'declined')}
-        />
-      );
-
-    case 'owner-profile':
-      return (
-        <Profile
-          session={ownerSession}
-          nav={ownerNav}
-          profile={ownerProfile}
-          ownerListings={myListings}
-          currentBoarders={ownerThreadsView.map((t) => ({ name: t.contact, color: t.color }))}
-          boarderCount={ownerProfile.boarders}
-          rating={reviewsFor(OWNER_LISTING_IDS[0], submittedReviews[OWNER_LISTING_IDS[0]]).average}
-          credentialsStatus={ownerCredentials[accountKey(owner?.email)] ?? 'review'}
-          onEditListing={(l) => openEditor(l)}
-          onAddListing={() => openEditor(null)}
-          onEditProfile={() => go('owner-edit-profile')}
-        />
-      );
-
-    case 'owner-edit-profile':
-      return (
-        <EditProfile
-          session={ownerSession}
-          nav={ownerNav}
-          profile={ownerProfile}
-          onCancel={() => go('owner-profile')}
-          onSave={(profile) => { setOwnerProfile(profile); go('owner-profile'); }}
-        />
-      );
-
-    default:
-      return (
-        <WelcomeRoleSelect
-          onSelectBoarder={() => go('boarder-login')}
-          onSelectOwner={() => go('owner-login')}
-        />
-      );
-  }
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
 
 export default App;

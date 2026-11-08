@@ -1,5 +1,9 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import App from './App';
+
+// A fresh router per render, so every test (and every simulated refresh) starts at '/'.
+const renderApp = () => render(<MemoryRouter><App /></MemoryRouter>);
 
 beforeAll(() => {
   // jsdom does not implement scrolling.
@@ -32,7 +36,7 @@ const sendMessage = (text) => {
 };
 
 test('a boarder logs in and sees their name in the top bar and chat greetings', async () => {
-  render(<App />);
+  renderApp();
   await logIn('boarder', 'ana.reyes@uep.edu.ph');
 
   expect(screen.getByText('Ana Reyes')).toBeInTheDocument();
@@ -43,7 +47,7 @@ test('a boarder logs in and sees their name in the top bar and chat greetings', 
 });
 
 test('a registered account must use its password', async () => {
-  render(<App />);
+  renderApp();
   fireEvent.click(screen.getByRole('button', { name: /log in as boarder/i }));
   fireEvent.click(screen.getByRole('button', { name: /create (an )?account|sign up|register/i }));
 
@@ -65,7 +69,7 @@ test('a registered account must use its password', async () => {
 });
 
 test('messages between a boarder and the owner reach both inboxes', async () => {
-  render(<App />);
+  renderApp();
 
   await logIn('boarder', 'ana.reyes@uep.edu.ph');
   goTo(/messages/i);
@@ -90,14 +94,14 @@ test('messages between a boarder and the owner reach both inboxes', async () => 
 });
 
 test('messages are still there after a page refresh', async () => {
-  render(<App />);
+  renderApp();
   await logIn('boarder', 'ana.reyes@uep.edu.ph');
   goTo(/messages/i);
   openChat('Lourdes Cabal');
   sendMessage('Saved before refresh');
 
   cleanup();
-  render(<App />);
+  renderApp();
 
   await logIn('boarder', 'ana.reyes@uep.edu.ph');
   goTo(/messages/i);
@@ -110,7 +114,7 @@ const autoReplies = () => activeChat()
   .map((bubble) => bubble.textContent);
 
 test('the auto-reply answers quick replies from the listing details', async () => {
-  render(<App />);
+  renderApp();
   await logIn('boarder', 'ana.reyes@uep.edu.ph');
   goTo(/messages/i);
   openChat('Ramon Abella');
@@ -129,7 +133,7 @@ test('the auto-reply answers quick replies from the listing details', async () =
 });
 
 test('the auto-reply answers typed questions, and only when it knows the answer', async () => {
-  render(<App />);
+  renderApp();
   await logIn('boarder', 'ana.reyes@uep.edu.ph');
   goTo(/messages/i);
   openChat('Ramon Abella');
@@ -145,7 +149,7 @@ test('the auto-reply answers typed questions, and only when it knows the answer'
 });
 
 test('auto-replies in a chat with the owner also reach the owner, who gets none of their own', async () => {
-  render(<App />);
+  renderApp();
   await logIn('boarder', 'ana.reyes@uep.edu.ph');
   goTo(/messages/i);
   openChat('Lourdes Cabal');
@@ -195,7 +199,7 @@ const submitOwnerLogin = () => {
 
 test('a new owner must send credentials before reaching the dashboard', async () => {
   mockCamera();
-  render(<App />);
+  renderApp();
 
   fireEvent.click(screen.getByRole('button', { name: /log in as owner/i }));
   submitOwnerLogin();
@@ -234,7 +238,7 @@ const registerOwner = async ({ name, email, password }) => {
 
 test('a newly registered owner goes straight to the camera step, then the dashboard', async () => {
   mockCamera();
-  render(<App />);
+  renderApp();
 
   await registerOwner({ name: 'Rosa Villanueva', email: 'rosa@email.com', password: 'boarding1' });
   await turnOnCamera();
@@ -250,7 +254,7 @@ test('a newly registered owner goes straight to the camera step, then the dashbo
 
 test('an owner can reset a forgotten password with a verification code', async () => {
   mockCamera();
-  render(<App />);
+  renderApp();
   await registerOwner({ name: 'Rosa Villanueva', email: 'rosa@email.com', password: 'boarding1' });
   await turnOnCamera();
   fireEvent.click(screen.getByRole('button', { name: 'Go back' }));
@@ -293,7 +297,7 @@ test('an owner can reset a forgotten password with a verification code', async (
 });
 
 test('a boarder can reset a forgotten password with the same three steps', async () => {
-  render(<App />);
+  renderApp();
   fireEvent.click(screen.getByRole('button', { name: /log in as boarder/i }));
   fireEvent.click(screen.getByRole('button', { name: /create (an )?account/i }));
   fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'Ana Reyes' } });
