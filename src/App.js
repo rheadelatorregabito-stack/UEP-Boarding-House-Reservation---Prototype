@@ -325,6 +325,7 @@ function App() {
             setSignup(null);
             go('boarder-home');
           }}
+          onResetPassword={resetPassword('boarder')}
           onCreateAccount={() => go('boarder-register')}
         />
       );

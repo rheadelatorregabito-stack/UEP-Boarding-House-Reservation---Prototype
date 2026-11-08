@@ -291,3 +291,43 @@ test('an owner can reset a forgotten password with a verification code', async (
   fireEvent.click(screen.getByRole('button', { name: /^log in$/i }));
   await turnOnCamera();
 });
+
+test('a boarder can reset a forgotten password with the same three steps', async () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole('button', { name: /log in as boarder/i }));
+  fireEvent.click(screen.getByRole('button', { name: /create (an )?account/i }));
+  fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'Ana Reyes' } });
+  fireEvent.change(screen.getByLabelText(/^email$/i), { target: { value: 'ana.reyes@uep.edu.ph' } });
+  fireEvent.change(screen.getByLabelText(/contact number/i), { target: { value: '09171234567' } });
+  fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'secret123' } });
+  fireEvent.change(screen.getByLabelText(/^confirm password$/i), { target: { value: 'secret123' } });
+  fireEvent.click(screen.getByRole('button', { name: /create account/i }));
+  await screen.findByText(/account created for/i);
+
+  fireEvent.click(screen.getByRole('button', { name: 'Forgot password?' }));
+  expect(screen.getByText('BOARDER ACCOUNT')).toBeInTheDocument();
+  expect(screen.getByLabelText(/^email$/i)).toHaveValue('ana.reyes@uep.edu.ph');
+  fireEvent.click(screen.getByRole('button', { name: 'Send verification code' }));
+
+  const code = within(await screen.findByRole('note')).getByText(/^\d{6}$/).textContent;
+  fireEvent.change(screen.getByLabelText('Verification code'), { target: { value: code } });
+  fireEvent.click(screen.getByRole('button', { name: 'Verify code' }));
+
+  fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'fresh2025' } });
+  fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'fresh2026' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save new password' }));
+  expect(screen.getByText('Passwords don’t match.')).toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'fresh2025' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save new password' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Back to log in' }));
+  expect(screen.getByText(/your password has been updated/i)).toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'secret123' } });
+  fireEvent.click(screen.getByRole('button', { name: /^log in$/i }));
+  expect(await screen.findByText(/incorrect password/i)).toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'fresh2025' } });
+  fireEvent.click(screen.getByRole('button', { name: /^log in$/i }));
+  expect(await screen.findByRole('navigation', { name: 'Main' })).toBeInTheDocument();
+});

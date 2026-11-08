@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import styles from './BoarderLogin.module.css';
+import PasswordRecovery from '../shared/PasswordRecovery';
 
 const Icon = ({ size = 20, children }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -72,9 +73,6 @@ const validateEmail = (value) => {
 
 const errorText = (error, fallback) => error?.message || fallback;
 
-// Used when no onForgotPassword handler is passed, so the flow still works without a backend.
-const mockSendResetLink = () => new Promise((resolve) => setTimeout(resolve, 1000));
-
 function Field({ id, label, icon, error, trailing, ...inputProps }) {
   const errorId = `${id}-error`;
   return (
@@ -96,7 +94,7 @@ function Field({ id, label, icon, error, trailing, ...inputProps }) {
   );
 }
 
-export default function BoarderLogin({ onLogin, onBack, onForgotPassword, onCreateAccount, initialEmail = '', notice = '' }) {
+export default function BoarderLogin({ onLogin, onBack, onResetPassword, onCreateAccount, initialEmail = '', notice = '' }) {
   const id = useId();
   const headingRef = useRef(null);
   const isFirstRender = useRef(true);
@@ -108,18 +106,15 @@ export default function BoarderLogin({ onLogin, onBack, onForgotPassword, onCrea
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: '', password: '' });
   const [login, setLogin] = useState({ status: 'idle', message: '' });
+  const [loginNotice, setLoginNotice] = useState(notice);
 
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetError, setResetError] = useState('');
-  const [reset, setReset] = useState({ status: 'idle', message: '' });
-
-  // Move focus to the new heading when switching views, so keyboard and screen-reader users follow along.
+  // Return focus to the log-in heading when coming back from password recovery.
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
-    headingRef.current?.focus();
+    if (view === 'login') headingRef.current?.focus();
   }, [view]);
 
   const handleLogin = async (e) => {
@@ -142,37 +137,16 @@ export default function BoarderLogin({ onLogin, onBack, onForgotPassword, onCrea
     }
   };
 
-  const openForgotPassword = () => {
-    setResetEmail(email);
-    setResetError('');
-    setReset({ status: 'idle', message: '' });
-    setView('forgot');
-  };
-
-  const handleSendResetLink = async (e) => {
-    e.preventDefault();
-    if (reset.status === 'sending') return;
-
-    const error = validateEmail(resetEmail);
-    setResetError(error);
-    if (error) return;
-
-    setReset({ status: 'sending', message: '' });
-    try {
-      await (onForgotPassword ?? mockSendResetLink)({ email: resetEmail.trim() });
-      setReset({ status: 'sent', message: '' });
-    } catch (err) {
-      setReset({ status: 'error', message: errorText(err, 'We couldn’t send the reset link. Please try again.') });
-    }
-  };
-
-  const backToLogin = () => {
-    if (reset.status === 'sent') setEmail(resetEmail.trim());
+  const finishRecovery = (recoveredEmail) => {
+    setEmail(recoveredEmail);
+    setPassword('');
+    setErrors({ email: '', password: '' });
+    setLogin({ status: 'idle', message: '' });
+    setLoginNotice('Your password has been updated. Log in with your new password.');
     setView('login');
   };
 
   const isLoggingIn = login.status === 'loading';
-  const isSendingReset = reset.status === 'sending';
 
   return (
     <main className={styles.screen}>
@@ -214,10 +188,10 @@ export default function BoarderLogin({ onLogin, onBack, onForgotPassword, onCrea
 
             <h2 ref={headingRef} tabIndex={-1} className={styles.title}>Boarder Log in</h2>
 
-            {notice && (
+            {loginNotice && (
               <div className={styles.notice} role="status">
                 <span className={styles.noticeIcon}><CheckIcon /></span>
-                <p className={styles.noticeText}>{notice}</p>
+                <p className={styles.noticeText}>{loginNotice}</p>
               </div>
             )}
 
@@ -262,7 +236,7 @@ export default function BoarderLogin({ onLogin, onBack, onForgotPassword, onCrea
               }
             />
 
-            <button type="button" className={`${styles.link} ${styles.forgot}`} onClick={openForgotPassword}>
+            <button type="button" className={`${styles.link} ${styles.forgot}`} onClick={() => setView('forgot')}>
               Forgot password?
             </button>
 
@@ -287,73 +261,15 @@ export default function BoarderLogin({ onLogin, onBack, onForgotPassword, onCrea
             </button>
           </form>
         ) : (
-          <form className={styles.formContent} onSubmit={handleSendResetLink} noValidate>
-            <button type="button" className={styles.backButton} onClick={backToLogin} aria-label="Back to log in">
-              <BackIcon />
-            </button>
-
-            <span className={styles.chip}>BOARDER ACCOUNT</span>
-
-            <h2 ref={headingRef} tabIndex={-1} className={styles.title}>Reset password</h2>
-
-            {reset.status === 'sent' ? (
-              <>
-                <div className={styles.notice} role="status">
-                  <span className={styles.noticeIcon}><CheckIcon /></span>
-                  <p className={styles.noticeText}>
-                    If an account exists for <strong>{resetEmail.trim()}</strong>, we’ve sent a link to
-                    reset your password. Check your inbox and spam folder.
-                  </p>
-                </div>
-
-                <button type="button" className={styles.submit} onClick={backToLogin}>
-                  Back to log in
-                </button>
-
-                <button
-                  type="button"
-                  className={`${styles.link} ${styles.signup}`}
-                  onClick={() => setReset({ status: 'idle', message: '' })}
-                >
-                  Didn’t get it? Send again
-                </button>
-              </>
-            ) : (
-              <>
-                <p className={styles.subtitle}>
-                  Enter the email you use for BoardEase and we’ll send you a link to reset your password.
-                </p>
-
-                <Field
-                  id={`${id}-reset-email`}
-                  label="Email"
-                  icon={<MailIcon />}
-                  error={resetError}
-                  type="email"
-                  placeholder="student@email.com"
-                  autoComplete="email"
-                  value={resetEmail}
-                  onChange={(e) => {
-                    setResetEmail(e.target.value);
-                    if (resetError) setResetError('');
-                  }}
-                />
-
-                <button type="submit" className={styles.submit} disabled={isSendingReset} aria-busy={isSendingReset}>
-                  {isSendingReset && <span className={styles.spinner} aria-hidden="true" />}
-                  {isSendingReset ? 'Sending…' : 'Send reset link'}
-                </button>
-
-                {reset.status === 'error' && (
-                  <p className={styles.formError} role="alert">{reset.message}</p>
-                )}
-
-                <button type="button" className={`${styles.link} ${styles.signup}`} onClick={backToLogin}>
-                  Remembered it? Log in
-                </button>
-              </>
-            )}
-          </form>
+          <PasswordRecovery
+            styles={styles}
+            accountLabel="BOARDER ACCOUNT"
+            emailPlaceholder="student@email.com"
+            initialEmail={email}
+            onResetPassword={onResetPassword}
+            onCancel={() => setView('login')}
+            onDone={finishRecovery}
+          />
         )}
       </section>
     </main>

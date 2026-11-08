@@ -18,6 +18,7 @@ The app has two roles:
 | Feature | Description |
 |---|---|
 | Register and log in | Create an account with full name, email, contact number and password, then log in with it. |
+| Forgot password | Same three-step recovery as owners: email, 6-digit verification code, new password. |
 | Browse listings | Search by name, area, owner or price (e.g. "2000" shows listings at or below ₱2,000). |
 | Filter and sort | Filter by price range, gender, room type and zone; sort by price, rating or slots left. |
 | Post details | Photo gallery, rent, slots left, distance from UEP, amenities and owner info. |
@@ -32,7 +33,7 @@ The app has two roles:
 |---|---|
 | Register and log in | Separate owner account and login. |
 | Credential verification | After registering, or on the first login, the owner photographs a valid ID or business permit with the device camera. The dashboard opens only after the credentials are sent. |
-| Forgot password | Three-step recovery: enter email, enter a 6-digit verification code (expires in 10 minutes, 5 tries), then set a new password. |
+| Forgot password | Three-step recovery (shared with boarders): enter email, enter a 6-digit verification code (expires in 10 minutes, 5 tries), then set a new password. |
 | Browse (view-only) | See other owners' listings, without reserving or messaging. |
 | Post and edit listings | Add up to 10 photos, rent, slots, room type, amenities and a description, with a live preview. |
 | Messages | Reply to students. Messages are linked to the boarder's inbox in both directions. |
@@ -98,7 +99,7 @@ To log in as the sample owner with the sample listings and chats, use `lourdes.c
 4. **Reviews:** as the boarder, request to review the house; as the owner, accept it; then write the review as the boarder.
 5. **Post a listing:** as the owner, create a new post with photos and check the live preview.
 6. **Owner verification:** register a new owner (or log in as e.g. `pedro.cruz@email.com`), photograph an ID with the camera and send it. The dashboard opens only after that.
-7. **Forgot password:** on the owner login, click **Forgot password?**, enter the registered email, type the code shown in the yellow demo box, and set a new password. The old password stops working.
+7. **Forgot password:** on the boarder or owner login, click **Forgot password?**, enter the registered email, type the code shown in the yellow demo box, and set a new password. The old password stops working.
 
 **To reset the demo data:** open the browser DevTools → Application → Local Storage and delete the `boardease:v1:*` keys, then refresh.
 
@@ -129,7 +130,7 @@ src/
     ├── Profile/  EditProfile/
     ├── StatusScreens/        Confirmation screens (reservation sent, review submitted, post saved…)
     ├── SendCredentials/  CredentialsUnderReview/   Owner ID capture before the dashboard
-    └── shared/               Reusable UI pieces (layout, avatar, buttons, listing photo)
+    └── shared/               Reusable UI pieces (layout, avatar, buttons, listing photo, password recovery)
 ```
 
 Each component folder holds its `.jsx` file and its own `.module.css` stylesheet.
@@ -163,6 +164,7 @@ npm test
 8. A new owner must send credentials (using a simulated camera) before reaching the dashboard, and goes straight to the dashboard on later logins.
 9. A newly registered owner goes straight to the camera step, then the dashboard.
 10. An owner resets a forgotten password: a wrong code is rejected, a weak password is rejected, the old password stops working and the new one logs in.
+11. A boarder resets a forgotten password with the same three steps: mismatched passwords are rejected, the old password stops working and the new one logs in.
 
 ---
 
@@ -179,6 +181,8 @@ npm test
 
 ## Developer
 
-Developed by **[Your full name]** · [Course, year and section] · Instructor: [Instructor's name]
+- **Name:** Rhea D. Gabito
+- **Course / Section:** BSIT-3E
+- **University:** University of Eastern Philippines
 
-IPT project prototype — University of Eastern Philippines.
+IPT project prototype.

@@ -403,6 +403,10 @@
 
 .submit:disabled {
   opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.submit[aria-busy='true'] {
   cursor: progress;
 }
 
