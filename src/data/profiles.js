@@ -1,4 +1,3 @@
-/* Sample profiles from Figma B11/B14 (boarder) and D11/D16 (owner). */
 
 export const BOARDER_PROFILE = {
   name: 'Maria Santos',
@@ -35,7 +34,19 @@ export const OWNER_PROFILE = {
   boarders: 14,
 };
 
-// The owner's own posts (D11 "My boarding houses"). Sampaguita is also in the public feed.
+/* A different owner logging in keeps the boarding house details but none of the sample owner's personal info. */
+export const blankOwnerProfile = ({ name, email, phone = '' }) => ({
+  ...OWNER_PROFILE,
+  name,
+  bio: '',
+  email,
+  phone,
+  facebook: '',
+  instagram: '',
+  messenger: '',
+});
+
+// The owner's own posts. Sampaguita is also in the public feed.
 export const OWNER_LISTING_IDS = ['sampaguita'];
 
 export const OWNER_EXTRA_LISTINGS = [

@@ -1,6 +1,4 @@
-/* Icons — paths exported from Figma frames B3/B4/B5 (icon/home, msg, user, search, filter, chev, pin, star,
-   back, key, x, check), redrawn on a shared 24-unit grid with a 2-unit stroke. Colour comes from `currentColor`.
-   Shared by BoarderHome, BoarderTopBar and PostDetails. */
+/* Shared icon set on a 24-unit grid with a 2-unit stroke; colour comes from `currentColor`. */
 
 const Icon = ({ size = 20, fill = 'none', children }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor"

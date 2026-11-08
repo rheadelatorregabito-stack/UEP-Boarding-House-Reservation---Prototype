@@ -72,8 +72,6 @@ function Segmented({ label, options, value, onChange }) {
   );
 }
 
-/* ---------- D9 · Post / Edit Listing (Owner) (12:2) ---------- */
-
 export default function PostEditor({ session, nav, listing, ownerName, onDiscard, onSave }) {
   const id = useId();
   const fileRef = useRef(null);
@@ -158,7 +156,6 @@ export default function PostEditor({ session, nav, listing, ownerName, onDiscard
 
       <div className={styles.layout}>
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          {/* ---------- Photos ---------- */}
           <h2 className={styles.sectionTitle}>Photos</h2>
           <button
             type="button"
@@ -192,7 +189,6 @@ export default function PostEditor({ session, nav, listing, ownerName, onDiscard
             </ul>
           )}
 
-          {/* ---------- Details ---------- */}
           {[
             { key: 'name', label: 'Boarding house name', icon: HomeIcon, placeholder: "e.g. Sampaguita Girls' Boarding House" },
             { key: 'address', label: 'Address', icon: PinIcon, placeholder: 'Brgy., Catarman, Northern Samar', autoComplete: 'street-address' },
@@ -273,7 +269,6 @@ export default function PostEditor({ session, nav, listing, ownerName, onDiscard
           </div>
         </form>
 
-        {/* ---------- Live preview ---------- */}
         <aside className={styles.preview} aria-label="Live preview">
           <p className={styles.previewLabel}>Live preview</p>
           <div className={styles.previewCard}>

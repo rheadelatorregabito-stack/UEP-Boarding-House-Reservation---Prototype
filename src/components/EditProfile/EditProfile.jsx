@@ -28,8 +28,6 @@ function Field({ id, label, icon: FieldIcon, error, multiline, className, ...inp
   );
 }
 
-/* ---------- B14 · Boarder Edit Profile (22:480) / D16 · Owner Edit Profile (22:234) ---------- */
-
 export default function EditProfile({ session, nav, profile, onCancel, onSave }) {
   const id = useId();
   const isOwner = session?.role === 'owner';

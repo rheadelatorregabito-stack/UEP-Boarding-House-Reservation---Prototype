@@ -1,7 +1,5 @@
 import styles from './CredentialsUnderReview.module.css';
 
-/* ---------- Icons — paths exported from Figma (icon/clock, check, shield, home), on a 24-unit grid ---------- */
-
 const Icon = ({ size = 20, children }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -36,15 +34,11 @@ const HomeIcon = () => (
   </Icon>
 );
 
-/* ---------- Review progress ---------- */
-
 const STEPS = [
   { status: 'done',    icon: <CheckIcon />,  title: 'Credentials submitted', detail: 'Received today' },
   { status: 'current', icon: <ClockIcon />,  title: 'Under review',          detail: 'Usually 1–3 working days' },
   { status: 'pending', icon: <ShieldIcon />, title: 'Approved',              detail: 'Start posting' },
 ];
-
-/* ---------- Screen: "D4 · Credentials Under Review" (node 6:155) ---------- */
 
 export default function CredentialsUnderReview({ onContinue }) {
   return (

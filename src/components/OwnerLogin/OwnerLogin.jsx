@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import styles from './OwnerLogin.module.css';
 
-/* ---------- Icons (from Figma: icon/home, icon/back, icon/mail, icon/lock, icon/eye, icon/shield) ---------- */
-
 const Icon = ({ size = 20, strokeWidth = 1.67, children }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -52,8 +50,6 @@ const ShieldIcon = () => (
   </Icon>
 );
 
-/* ---------- Illustration (Figma "Photo" frame) ---------- */
-
 const HouseIllustration = () => (
   <div className={styles.photo} aria-hidden="true">
     <span className={styles.sun} />
@@ -67,10 +63,8 @@ const HouseIllustration = () => (
   </div>
 );
 
-/* ---------- Screen: "D2 · Owner Log in" (node 6:54) ---------- */
-
 export default function OwnerLogin({ onBack, onSubmit, onForgotPassword, onCreateAccount, initialEmail = '', notice = '' }) {
-  const [email, setEmail] = useState(initialEmail); // pre-filled after registering
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 

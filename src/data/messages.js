@@ -1,9 +1,8 @@
 import { GENDER_LABELS, ROOM_LABELS, formatPrice, pluralize } from '../components/BoarderHome/listings';
 
-/* Sample conversations from Figma B10 (boarder ↔ owners) and D10 (owner ↔ students).
-   `from: 'me'` is the signed-in user, `from: 'bot'` is the BoardEase auto-reply helper,
+/* Sample conversations. `from: 'me'` is the signed-in user, `from: 'bot'` is the BoardEase auto-reply helper,
    anything else is the other person.
-   A sample `text` can be a function of the logged-in boarder ({ name, firstName }) so greetings use
+   A sample `text` can be a function of the logged-in boarder ({ name }) so greetings use
    their real name; `personalizeThreads` turns those into plain strings for display. */
 
 export const BOARDER_THREADS = [
@@ -18,7 +17,7 @@ export const BOARDER_THREADS = [
     unread: 1,
     messages: [
       { id: 'm1', from: 'me', text: 'Hi po! Is there still a slot for next semester?', time: '9:41 AM' },
-      { id: 'm2', from: 'them', text: ({ firstName }) => `Hello ${firstName}! Yes, we still have 3 slots in the girls’ room.`, time: '9:43 AM' },
+      { id: 'm2', from: 'them', text: ({ name }) => `Hello ${name}! Yes, we still have 3 slots in the girls’ room.`, time: '9:43 AM' },
       { id: 'm3', from: 'me', text: 'How much is the monthly rent and is WiFi included?', time: '9:45 AM' },
       { id: 'm4', from: 'them', text: '₱1,800 per month and WiFi is free. You can visit anytime this week.', time: '9:46 AM' },
     ],
@@ -69,7 +68,7 @@ export const BOARDER_THREADS = [
 
 export const OWNER_THREADS = [
   {
-    id: 'maria', // the logged-in boarder's side of B10's Sampaguita chat; App.js swaps in their name
+    id: 'maria',
     listingId: 'sampaguita',
     contact: ({ name }) => name,
     color: '#1d4ed8',
@@ -78,7 +77,7 @@ export const OWNER_THREADS = [
     unread: 2,
     messages: [
       { id: 'm1', from: 'them', text: 'Hi po! Is there still a slot for next semester?', time: '9:41 AM' },
-      { id: 'm2', from: 'me', text: ({ firstName }) => `Hello ${firstName}! Yes, we still have 3 slots in the girls’ room.`, time: '9:43 AM' },
+      { id: 'm2', from: 'me', text: ({ name }) => `Hello ${name}! Yes, we still have 3 slots in the girls’ room.`, time: '9:43 AM' },
       { id: 'm3', from: 'them', text: 'How much is the monthly rent and is WiFi included?', time: '9:45 AM' },
       { id: 'm4', from: 'me', text: '₱1,800 per month and WiFi is free. You can visit anytime this week.', time: '9:46 AM' },
     ],
@@ -136,6 +135,25 @@ export function personalizeThreads(threads, boarderName) {
   }));
 }
 
+/* Threads loaded from localStorage lose their template functions (JSON drops them);
+   copy those back from the sample threads by thread id and message id. */
+export function reviveThreads(stored, seeds) {
+  if (!Array.isArray(stored)) return seeds;
+  const seedById = Object.fromEntries(seeds.map((t) => [t.id, t]));
+  return stored.map((thread) => {
+    const seed = seedById[thread.id];
+    if (!seed) return thread;
+    const seedMessages = Object.fromEntries(seed.messages.map((m) => [m.id, m]));
+    return {
+      ...thread,
+      contact: thread.contact ?? seed.contact,
+      messages: thread.messages.map((m) => (m.text === undefined && seedMessages[m.id]
+        ? { ...m, text: seedMessages[m.id].text }
+        : m)),
+    };
+  });
+}
+
 export const nowLabel = () =>
   new Date().toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit' });
 
@@ -143,8 +161,7 @@ let messageSeq = 0;
 /* Unique even when two messages are created in the same millisecond (question + auto-reply). */
 export const nextMessageId = () => `m-${Date.now()}-${(messageSeq += 1)}`;
 
-/* ---------- Boarder quick replies (shown above the chat input) ----------
-   `topic` marks questions the helper can answer straight from the listing data. */
+/* Boarder quick replies. `topic` marks questions the helper can answer straight from the listing data. */
 export const QUICK_REPLIES = [
   { id: 'slots', text: 'Is there a vacant slot?', topic: 'slots' },
   { id: 'rent', text: 'How much is the monthly rent?', topic: 'price' },

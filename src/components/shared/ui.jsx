@@ -6,7 +6,6 @@ export { ui };
 
 export const cx = (...classes) => classes.filter(Boolean).join(' ');
 
-// Avatar colours used for people across the Figma frames (blue, red, green, navy, amber).
 const AVATAR_COLORS = ['#1d4ed8', '#e5383b', '#16a34a', '#0b1b4d', '#f59e0b'];
 
 export const initialOf = (name = '') =>

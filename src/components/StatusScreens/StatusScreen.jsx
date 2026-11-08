@@ -16,8 +16,7 @@ const VARIANTS = {
   outlineDanger: ui.btnOutlineDanger,
 };
 
-/* Shared layout of the confirmation frames (B6, B8, B12, B13, D15):
-   icon circle → 40px title → content card(s) → row of buttons. */
+/* Shared layout of the confirmation screens: icon circle → title → content card(s) → row of buttons. */
 export default function StatusScreen({ session, nav, active = null, tone = 'success', title, children, actions = [] }) {
   const { className, Icon } = TONES[tone];
 
@@ -43,8 +42,6 @@ export default function StatusScreen({ session, nav, active = null, tone = 'succ
     </Screen>
   );
 }
-
-/* ---------- Pieces used inside the status frames ---------- */
 
 export function SummaryCard({ rows }) {
   return (

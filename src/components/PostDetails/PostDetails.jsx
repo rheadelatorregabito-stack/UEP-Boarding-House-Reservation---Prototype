@@ -4,11 +4,8 @@ import BoarderTopBar from '../BoarderTopBar/BoarderTopBar';
 import { BackIcon, CheckIcon, KeyIcon, LockIcon, MessageIcon, StarIcon } from '../BoarderHome/icons';
 import { GENDER_LABELS, LISTINGS, formatPrice } from '../BoarderHome/listings';
 
-/* ---------- Helpers ---------- */
-
 const ROOM_DETAIL = { shared: 'Shared room (not studio)', studio: 'Studio' };
 
-// Amenity chip colours cycle in the same order as the Figma "About this place" chips.
 const CHIP_TONES = ['blue', 'yellow', 'green', 'blue', 'red', 'yellow'];
 
 const ownerInitial = (owner) => owner.replace(/^(Mr|Mrs|Ms|Dr)\.?\s+/i, '').charAt(0).toUpperCase();
@@ -21,14 +18,13 @@ const slotsChip = ({ slotsLeft, totalSlots }) => {
 };
 
 /* Without real photos, the gallery shows the listing's illustration first, then the other
-   listings' palettes — the same placeholder approach the Figma thumbnails use. */
+   listings' palettes as placeholders. */
 const galleryFor = (listing) => {
   if (listing.photos?.length) return listing.photos.map((src) => ({ src }));
   const others = LISTINGS.filter((l) => l.id !== listing.id).slice(0, 4).map((l) => l.palette);
   return [listing.palette, ...others].map((palette) => ({ palette }));
 };
 
-/* Figma "Photo" frames (740×420 main, 173×110 thumbs) share the same proportions. */
 function HouseScene({ palette, className }) {
   return (
     <div
@@ -54,24 +50,21 @@ function Photo({ photo, alt, className }) {
     : <HouseScene palette={photo.palette} className={className} />;
 }
 
-/* ---------- Screen: "B5 · Post Details (Reserve & Message active)" (node 15:896) ---------- */
-
 export default function PostDetails({
   listing,
-  role = 'boarder', // 'owner' = "D7 · Post Details (Owner view-only)" (7:767)
-  reviewStats,      // optional { average, total } — live totals incl. reviews written this session
-  reserved = false, // boarder already sent a reservation request for this listing
-  email,
-  name,
+  session,
+  reviewStats,
+  reserved = false,
   onBack,
-  onMessageOwner,   // onMessageOwner(listing) — "Message owner" and the host card's "Message"
-  onReserve,        // onReserve(listing) — Figma target: B6 · Reservation Request Sent
-  onOpenReviews,    // onOpenReviews(listing) — Figma target: B7 · Reviews
+  onMessageOwner,
+  onReserve,
+  onOpenReviews,
   onOpenMessages,
   onOpenProfile,
   onLogout,
-  onPost,           // owner: top-bar "Post"
+  onPost,
 }) {
+  const { role = 'boarder', email, name } = session ?? {};
   const isOwner = role === 'owner';
   const titleId = useId();
   const gallery = useMemo(() => galleryFor(listing), [listing]);
@@ -121,7 +114,6 @@ export default function PostDetails({
       />
 
       <main className={styles.page}>
-        {/* ---------- Back + breadcrumb ---------- */}
         <div className={styles.crumbRow}>
           <button type="button" className={styles.backButton} onClick={onBack} aria-label="Back to listings">
             <BackIcon />
@@ -137,7 +129,6 @@ export default function PostDetails({
         </div>
 
         <div className={styles.layout}>
-          {/* ---------- Left column ---------- */}
           <div className={styles.mainColumn}>
             <section className={styles.gallery} aria-label="Photos">
               <div className={styles.mainPhoto}>
@@ -205,7 +196,6 @@ export default function PostDetails({
             </section>
           </div>
 
-          {/* ---------- Right column ---------- */}
           <aside className={styles.bookingColumn}>
             <section className={styles.bookingCard} aria-labelledby={titleId}>
               <h1 id={titleId} className={styles.title}>{title}</h1>

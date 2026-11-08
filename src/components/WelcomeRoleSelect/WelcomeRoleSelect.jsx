@@ -1,7 +1,5 @@
 import styles from './WelcomeRoleSelect.module.css';
 
-/* ---------- Icons (from Figma: icon/home, icon/user, icon/arrow) ---------- */
-
 const HomeIcon = ({ size = 28 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -25,8 +23,6 @@ const ArrowIcon = () => (
   </svg>
 );
 
-/* ---------- Illustration (Figma "Photo" frame) ---------- */
-
 const HouseIllustration = () => (
   <div className={styles.photo} aria-hidden="true">
     <span className={styles.sun} />
@@ -40,8 +36,6 @@ const HouseIllustration = () => (
   </div>
 );
 
-/* ---------- Role button ---------- */
-
 const RoleButton = ({ variant, icon, title, subtitle, onClick }) => (
   <button type="button" className={`${styles.roleButton} ${styles[variant]}`} onClick={onClick}>
     <span className={styles.roleIcon}>{icon}</span>
@@ -54,8 +48,6 @@ const RoleButton = ({ variant, icon, title, subtitle, onClick }) => (
     </span>
   </button>
 );
-
-/* ---------- Screen ---------- */
 
 export default function WelcomeRoleSelect({ onSelectBoarder, onSelectOwner }) {
   return (

@@ -1,8 +1,6 @@
 import { useId, useState } from 'react';
 import styles from './BoarderRegister.module.css';
 
-/* ---------- Icons — same 24-unit grid and 2-unit stroke as the Figma icons on B2 · Boarder Log in ---------- */
-
 const Icon = ({ size = 20, children }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -59,8 +57,6 @@ const EyeIcon = ({ off }) => (
   </Icon>
 );
 
-/* ---------- Illustration (same as the Figma "Photo" frame on B2) ---------- */
-
 const HouseIllustration = () => (
   <div className={styles.photo} aria-hidden="true">
     <span className={styles.ground} />
@@ -73,8 +69,6 @@ const HouseIllustration = () => (
     <span className={styles.roof} />
   </div>
 );
-
-/* ---------- Validation ---------- */
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PH_MOBILE_PATTERN = /^(09|\+639)\d{9}$/;
@@ -121,8 +115,6 @@ const VALIDATORS = {
 const validateAll = (form) =>
   Object.fromEntries(Object.keys(VALIDATORS).map((key) => [key, VALIDATORS[key](form[key], form)]));
 
-/* ---------- Shared input row (styled like Figma "field:*" frames on B2) ---------- */
-
 function Field({ id, label, icon, error, hint, trailing, ...inputProps }) {
   const errorId = `${id}-error`;
   const hintId = `${id}-hint`;
@@ -165,8 +157,6 @@ function VisibilityToggle({ visible, onToggle, label }) {
   );
 }
 
-/* ---------- Screen: Boarder Register (no Figma frame — built in the style of B2 · Boarder Log in) ---------- */
-
 export default function BoarderRegister({ onRegister, onBack, onBackToLogin }) {
   const id = useId();
 
@@ -175,7 +165,7 @@ export default function BoarderRegister({ onRegister, onBack, onBackToLogin }) {
   const [attempted, setAttempted] = useState(false); // validate live only after the first submit
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [submission, setSubmission] = useState({ status: 'idle', message: '' }); // idle | loading | error
+  const [submission, setSubmission] = useState({ status: 'idle', message: '' });
 
   const updateField = (key) => (e) => {
     const next = { ...form, [key]: e.target.value };

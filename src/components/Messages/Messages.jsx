@@ -4,8 +4,6 @@ import { Avatar, Screen, cx, ui } from '../shared/ui';
 import { BackIcon, BellIcon, CheckIcon, ClockIcon, CloseIcon, EditIcon, SearchIcon, SendIcon } from '../BoarderHome/icons';
 import { QUICK_REPLIES, helperReplyFor } from '../../data/messages';
 
-/* Review-request card shown at the end of a thread (D12 pending, D13 accepted, D14 declined;
-   B10 shows the boarder's side of the same request). */
 function RequestCard({ isOwner, status, requester, listingName, onAccept, onDecline, onWriteReview }) {
   if (status === 'pending') {
     return (
@@ -84,22 +82,20 @@ function RequestCard({ isOwner, status, requester, listingName, onAccept, onDecl
 const PREVIEW_PREFIX = { me: 'You: ', bot: 'Auto-reply: ' };
 const BUBBLE_CLASS = { me: styles.bubbleMe, bot: styles.bubbleBot };
 
-/* ---------- B10 · Messages (17:362) / D10 · Messages (12:217) + D12–D14 review-request states ---------- */
-
 export default function Messages({
   session,
   nav,
   threads,
   initialThreadId,
-  reviewRequests = {},     // { [listingId]: 'pending' | 'accepted' | 'declined' | 'reviewed' }
-  requesterName = 'The student', // App.js passes the logged-in boarder's name
-  listingNames = {},       // { [listingId]: name }
-  listings = [],           // boarder: listing data the auto-reply helper answers from
-  onSend,                  // (threadId, text, from = 'me')
-  onOpenThread,            // (threadId) — clears unread
-  onAcceptRequest,         // owner: (listingId)
-  onDeclineRequest,        // owner: (listingId)
-  onWriteReview,           // boarder: (listingId)
+  reviewRequests = {},
+  requesterName = 'The student',
+  listingNames = {},
+  listings = [],
+  onSend,
+  onOpenThread,
+  onAcceptRequest,
+  onDeclineRequest,
+  onWriteReview,
 }) {
   const isOwner = session?.role === 'owner';
   const searchId = useId();
@@ -128,7 +124,6 @@ export default function Messages({
       [t.contact, t.context, t.detail, t.messages.at(-1)?.text].join(' ').toLowerCase().includes(q));
   }, [threads, query]);
 
-  // Keep the newest message in view.
   useEffect(() => {
     const el = bubblesRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -193,7 +188,6 @@ export default function Messages({
       )}
 
       <div className={cx(styles.inbox, mobileThreadOpen && styles.inboxThreadOpen)}>
-        {/* ---------- Chat list ---------- */}
         <aside className={styles.chatList} aria-label="Conversations">
           <label htmlFor={searchId} className={styles.search}>
             <SearchIcon size={20} />
@@ -242,7 +236,6 @@ export default function Messages({
           </ul>
         </aside>
 
-        {/* ---------- Thread ---------- */}
         {active ? (
           <section className={styles.thread} aria-label={`Conversation with ${active.contact}`}>
             <header className={styles.threadHead}>

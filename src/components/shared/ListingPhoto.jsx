@@ -1,7 +1,6 @@
 import styles from './ListingPhoto.module.css';
 
-/* The house illustration used as a listing "photo" across the Figma frames, tinted with the
-   listing's palette. Shows listing.photos[0] instead when a real photo exists. */
+/* House illustration tinted with the listing's palette; shows listing.photos[0] instead when a real photo exists. */
 export default function ListingPhoto({ listing, className = '', rounded = 14 }) {
   const style = { borderRadius: rounded };
 

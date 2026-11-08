@@ -1,8 +1,4 @@
-/* Sample listings and filter/sort helpers for the Boarder Home screen.
-   Listing content and photo palettes come from the six cards in Figma frame "B3 · Boarder Home" (15:115).
-   Detail fields (totalSlots, distance, description, amenities, ownerSince, reviewCount) feed the
-   Post Details screen (B5); only Sampaguita's come from Figma, the rest are sample copy.
-   Replace LISTINGS with API data of the same shape. */
+/* Sample listings and filter/sort helpers. Replace LISTINGS with API data of the same shape. */
 
 export const PRICE_MIN = 500;
 export const PRICE_MAX = 5000;
@@ -21,11 +17,11 @@ export const SORT_OPTIONS = [
 ];
 
 export const DEFAULT_FILTERS = {
-  gender: 'any',      // 'any' | 'boys' | 'girls' | 'mixed'
+  gender: 'any',
   minPrice: PRICE_MIN,
   maxPrice: PRICE_MAX,
-  roomType: 'any',    // 'any' | 'studio' | 'notStudio'
-  zones: [],          // empty = every zone
+  roomType: 'any',
+  zones: [],
 };
 
 export const LISTINGS = [
@@ -151,8 +147,6 @@ export const LISTINGS = [
   },
 ];
 
-/* ---------- Formatting ---------- */
-
 const pesoFormatter = new Intl.NumberFormat('en-PH', {
   style: 'currency',
   currency: 'PHP',
@@ -163,8 +157,7 @@ export const formatPrice = (value) => pesoFormatter.format(value);
 
 export const pluralize = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
-/* ---------- Search ----------
-   Every word in the query must match. Words that read as a price ("2000", "₱2,500") keep listings at or
+/* Every word in the query must match. Words that read as a price ("2000", "₱2,500") keep listings at or
    below that price; anything else is matched against name, zone, area, owner and tags. */
 
 const asPrice = (word) => {
@@ -192,8 +185,6 @@ const matchesQuery = (listing, query) => {
     return price !== null ? listing.price <= price : haystack.includes(word);
   });
 };
-
-/* ---------- Filters & sort ---------- */
 
 export function filterListings(listings, filters, query = '') {
   return listings.filter((listing) => {

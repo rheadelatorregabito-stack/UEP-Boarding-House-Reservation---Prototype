@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './SendCredentials.module.css';
 
-/* ---------- Icons — paths exported from Figma (icon/back, icon/camera), on a 24-unit grid ---------- */
-
 const Icon = ({ size = 20, children }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -23,8 +21,6 @@ const CameraIcon = () => (
   </Icon>
 );
 
-/* ---------- Content ---------- */
-
 const DOCUMENT_TYPES = ['Valid ID', 'Business Permit', 'Brgy. Clearance'];
 
 const STEPS = [
@@ -32,8 +28,6 @@ const STEPS = [
   'Align it inside the frame',
   'Capture and send for review',
 ];
-
-/* ---------- Camera helpers ---------- */
 
 // Prefer the rear camera on phones (better for documents); laptops ignore this and use the webcam.
 const CAMERA_CONSTRAINTS = {
@@ -59,8 +53,7 @@ function cameraErrorMessage(error) {
 
 const stopStream = (stream) => stream?.getTracks().forEach((track) => track.stop());
 
-/* ---------- Submission ----------
-   With `submitUrl`, the photo is POSTed as multipart/form-data (fields: documentType, file).
+/* With `submitUrl`, the photo is POSTed as multipart/form-data (fields: documentType, file).
    Without it, a mock handler simulates the upload so the flow works with no backend. */
 
 async function sendCredentials({ submitUrl, documentType, file }) {
@@ -78,8 +71,6 @@ async function sendCredentials({ submitUrl, documentType, file }) {
   return response.json().catch(() => ({ ok: true }));
 }
 
-/* ---------- Screen: "D3 · Send Credentials (Camera)" (node 6:116) ---------- */
-
 export default function SendCredentials({
   onBack,
   onSend,
@@ -96,8 +87,6 @@ export default function SendCredentials({
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
   const requestIdRef = useRef(0); // ignores stale getUserMedia results (StrictMode, retries, unmount)
-
-  /* ----- Live camera stream ----- */
 
   const stopCamera = useCallback(() => {
     stopStream(streamRef.current);
@@ -148,8 +137,6 @@ export default function SendCredentials({
     };
   }, [startCamera, stopCamera]);
 
-  /* ----- Snapshot capture ----- */
-
   const captureSnapshot = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -170,8 +157,6 @@ export default function SendCredentials({
     setSubmission({ status: 'idle', message: '' });
   };
 
-  /* ----- Submission ----- */
-
   const onSubmitCredentials = async () => {
     if (submission.status === 'sending') return;
     if (!capturedImage) {
@@ -182,7 +167,7 @@ export default function SendCredentials({
     setSubmission({ status: 'sending', message: '' });
 
     try {
-      const blob = await (await fetch(capturedImage)).blob(); // data URL → Blob
+      const blob = await (await fetch(capturedImage)).blob();
       const fileName = `${documentType.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}.jpg`;
       const file = new File([blob], fileName, { type: 'image/jpeg' });
 
@@ -198,8 +183,6 @@ export default function SendCredentials({
       });
     }
   };
-
-  /* ----- Render ----- */
 
   const isLive = camera.status === 'live';
   const isSending = submission.status === 'sending';
@@ -287,7 +270,6 @@ export default function SendCredentials({
 
           {isLive && !capturedImage && (
             <div className={styles.guide} aria-hidden="true">
-              {/* Dashed 3px border with Figma's exact 12/9 dash pattern */}
               <svg className={styles.guideBorder} viewBox="0 0 420 250" preserveAspectRatio="none">
                 <rect x="1.5" y="1.5" width="417" height="247" rx="14.5" />
               </svg>

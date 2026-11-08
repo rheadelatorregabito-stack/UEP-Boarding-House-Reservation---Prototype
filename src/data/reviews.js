@@ -1,5 +1,4 @@
-/* Sample reviews. Sampaguita's come from Figma (B7/D8); the others are sample copy.
-   `breakdown` = how many reviews gave 5, 4, 3, 2, 1 stars (sums to the listing's reviewCount). */
+/* `breakdown` = how many reviews gave 5, 4, 3, 2, 1 stars (sums to the listing's reviewCount). */
 
 export const REVIEW_TAGS = ['Clean', 'Safe', 'Good value', 'Friendly owner', 'Fast WiFi', 'Near UEP'];
 

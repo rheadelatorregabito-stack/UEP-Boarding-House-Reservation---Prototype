@@ -1,7 +1,7 @@
 import styles from './BoarderTopBar.module.css';
 import { HomeIcon, MessageIcon, PlusSquareIcon, UserIcon } from '../BoarderHome/icons';
 
-const FALLBACK_NAMES = { boarder: 'Boarder', owner: 'Owner' }; // only when neither a name nor an email is known
+const FALLBACK_NAMES = { boarder: 'Boarder', owner: 'Owner' };
 const SUBTITLES = { boarder: 'UEP student', owner: 'Boarding house owner' };
 
 // "juan.delacruz@uep.edu.ph" → "Juan Delacruz"
@@ -30,14 +30,12 @@ const NAV_ITEMS = {
   ],
 };
 
-/* ---------- Figma "TopBar" (1440×76) — boarder version from B3, owner version from D5 ---------- */
-
 export default function BoarderTopBar({
-  role = 'boarder',     // 'boarder' | 'owner'
-  email,                // the top-bar name is derived from this…
-  name,                 // …unless an explicit name is given (e.g. from sign-up)
+  role = 'boarder',
+  email,
+  name,
   subtitle = SUBTITLES[role],
-  active = 'home',      // 'home' | 'post' | 'messages' | 'profile' | null
+  active = 'home',
   onHome,
   onPost,
   onOpenMessages,

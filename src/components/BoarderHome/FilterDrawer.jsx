@@ -28,7 +28,6 @@ const clampPrice = (value) =>
 
 const percent = (value) => ((value - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100;
 
-/* Segmented option row (Figma "opt:*" buttons) */
 function OptionGroup({ label, options, value, onChange, allowNone }) {
   const labelId = useId();
   return (
@@ -55,8 +54,6 @@ function OptionGroup({ label, options, value, onChange, allowNone }) {
   );
 }
 
-/* ---------- Figma "FilterDrawer" in frame "B4 · Home — Filters open" (15:469) ---------- */
-
 export default function FilterDrawer({ open, filters, zoneCounts, countResults, onApply, onClose }) {
   const dialogRef = useRef(null);
   const titleId = useId();
@@ -66,7 +63,7 @@ export default function FilterDrawer({ open, filters, zoneCounts, countResults, 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (open && !dialog.open) {
-      setDraft(filters); // start from the filters currently applied
+      setDraft(filters);
       dialog.showModal();
     } else if (!open && dialog.open) {
       dialog.close();

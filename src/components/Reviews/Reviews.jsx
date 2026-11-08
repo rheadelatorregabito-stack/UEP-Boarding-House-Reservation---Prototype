@@ -2,7 +2,6 @@ import styles from './Reviews.module.css';
 import { Avatar, PageHeader, Screen, Stars, cx, ui } from '../shared/ui';
 import { BellIcon, CheckIcon, ClockIcon, CloseIcon, EditIcon, LockIcon, StarIcon } from '../BoarderHome/icons';
 
-/* What the dark "request" card shows for each review-request status (boarder only). */
 const REQUEST_CARD = {
   none: {
     title: 'Stayed here? Leave a review',
@@ -36,18 +35,16 @@ const REQUEST_CARD = {
   },
 };
 
-/* ---------- B7 · Reviews (Request to review) (17:2) / D8 · Reviews (Owner can read only) (7:924) ---------- */
-
 export default function Reviews({
   session,
   nav,
   listing,
-  summary,            // { breakdown, total, average, reviews } from data/reviews.js
+  summary,
   requestStatus = 'none',
   onBack,
-  onRequestReview,    // boarder: status 'none'
-  onViewRequest,      // boarder: status 'pending'
-  onWriteReview,      // boarder: status 'accepted'
+  onRequestReview,
+  onViewRequest,
+  onWriteReview,
 }) {
   const isOwner = session?.role === 'owner';
   const card = REQUEST_CARD[requestStatus] ?? REQUEST_CARD.none;
@@ -59,7 +56,6 @@ export default function Reviews({
       <PageHeader title="Reviews" subtitle={listing.name} onBack={onBack} backLabel="Back to post" />
 
       <div className={styles.layout}>
-        {/* ---------- Summary ---------- */}
         <section className={cx(ui.card, styles.summary)} aria-label="Rating summary">
           <p className={styles.average}>{summary.total ? summary.average.toFixed(1) : '–'}</p>
           <Stars value={summary.average} size={22} />
@@ -80,7 +76,6 @@ export default function Reviews({
           </ul>
         </section>
 
-        {/* ---------- Request card / owner notice + list ---------- */}
         <div className={styles.list}>
           {isOwner ? (
             <p className={ui.notice}>

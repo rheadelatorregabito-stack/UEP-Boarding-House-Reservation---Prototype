@@ -15,22 +15,17 @@ import {
   sortListings,
 } from './listings';
 
-/* ---------- Screen: "B3 · Boarder Home (Browse & message owners)" (node 15:115) ----------
-   With role="owner" it becomes "D5 · Owner Home (Browse boarding houses)" (7:2): view-only banner,
-   cards without messaging, and the owner top bar (with Post). */
-
 export default function BoarderHome({
-  role = 'boarder',
-  email,              // logged-in email; the top-bar name is derived from it
-  name,               // optional explicit name (e.g. from sign-up); wins over the email
-  subtitle,           // top-bar subtitle; defaults per role
+  session,
+  subtitle,
   listings = LISTINGS,
   onLogout,
-  onOpenMessages,     // nav "Messages" → onOpenMessages(); card message button → onOpenMessages(listing)
+  onOpenMessages,
   onOpenProfile,
-  onPost,             // owner: top-bar "Post"
-  onViewPost,         // onViewPost(listing)
+  onPost,
+  onViewPost,
 }) {
+  const { role = 'boarder', email, name } = session ?? {};
   const isOwner = role === 'owner';
   const searchId = useId();
   const sortId = useId();
@@ -85,7 +80,6 @@ export default function BoarderHome({
       />
 
       <main className={styles.page}>
-        {/* ---------- Hero + search ---------- */}
         <section className={styles.hero} aria-labelledby={`${searchId}-title`}>
           <span className={`${styles.blob} ${styles.blobYellow}`} aria-hidden="true" />
           <span className={`${styles.blob} ${styles.blobRed}`} aria-hidden="true" />
@@ -139,7 +133,6 @@ export default function BoarderHome({
           </p>
         )}
 
-        {/* ---------- Results: header + grid ---------- */}
         <section className={styles.results} aria-labelledby={`${sortId}-results`}>
           <div className={styles.resultsHeader}>
             <h2 id={`${sortId}-results`} ref={resultsHeadingRef} tabIndex={-1} className={styles.resultsTitle}>
@@ -168,7 +161,6 @@ export default function BoarderHome({
             </div>
           </div>
 
-          {/* ---------- Grid ---------- */}
           {visibleListings.length > 0 ? (
             <ul className={styles.grid}>
               {visibleListings.map((listing) => (

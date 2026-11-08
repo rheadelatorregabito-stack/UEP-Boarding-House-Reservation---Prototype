@@ -74,26 +74,21 @@ function AvatarStack({ people, label }) {
   );
 }
 
-/* ---------- B11 · Boarder Profile (17:476) / D11 · Owner Profile (12:342) ---------- */
-
 export default function Profile({
   session,
   nav,
   profile,
-  // boarder
-  reservation,            // { listing, status: 'pending' | 'confirmed' } | null
-  myReviews = [],         // [{ listing, review }]
-  ownersMessaged = [],    // [{ name, color }]
-  onOpenListing,          // (listing)
-  // owner
+  reservation,
+  myReviews = [],
+  ownersMessaged = [],
+  onOpenListing,
   ownerListings = [],
-  currentBoarders = [],   // [{ name, color }]
+  currentBoarders = [],
   boarderCount = 0,
   rating,
   credentialsStatus = 'review',
-  onEditListing,          // (listing)
+  onEditListing,
   onAddListing,
-  // both
   onEditProfile,
 }) {
   const isOwner = session?.role === 'owner';
@@ -107,7 +102,6 @@ export default function Profile({
 
   return (
     <Screen session={session} nav={nav} active="profile">
-      {/* ---------- Cover + head ---------- */}
       <div className={styles.coverAndHead}>
         <div className={styles.cover} aria-hidden="true">
           <span className={cx(styles.blob, styles.blobYellow)} />
@@ -152,7 +146,6 @@ export default function Profile({
         </div>
       </div>
 
-      {/* ---------- Columns ---------- */}
       <div className={styles.columns}>
         <div className={styles.mainColumn}>
           <Section title="Bio" onEdit={onEditProfile}>

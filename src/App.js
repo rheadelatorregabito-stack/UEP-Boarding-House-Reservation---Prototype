@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-// Entry & owner onboarding
 import WelcomeRoleSelect from './components/WelcomeRoleSelect/WelcomeRoleSelect';
 import BoarderLogin from './components/BoarderLogin/BoarderLogin';
 import BoarderRegister from './components/BoarderRegister/BoarderRegister';
@@ -9,31 +8,32 @@ import OwnerRegister from './components/OwnerRegister/OwnerRegister';
 import SendCredentials from './components/SendCredentials/SendCredentials';
 import CredentialsUnderReview from './components/CredentialsUnderReview/CredentialsUnderReview';
 
-// Shared boarder/owner screens (role decides the Figma variant)
-import BoarderHome from './components/BoarderHome/BoarderHome';             // B3 / D5 (+ B4 / D6 filters)
-import PostDetails from './components/PostDetails/PostDetails';             // B5 / D7
-import Reviews from './components/Reviews/Reviews';                         // B7 / D8
-import Messages from './components/Messages/Messages';                      // B10 / D10, D12–D14
-import Profile from './components/Profile/Profile';                         // B11 / D11
-import EditProfile from './components/EditProfile/EditProfile';             // B14 / D16
+import BoarderHome from './components/BoarderHome/BoarderHome';
+import PostDetails from './components/PostDetails/PostDetails';
+import Reviews from './components/Reviews/Reviews';
+import Messages from './components/Messages/Messages';
+import Profile from './components/Profile/Profile';
+import EditProfile from './components/EditProfile/EditProfile';
 
-// Boarder-only and owner-only screens
-import WriteReview from './components/WriteReview/WriteReview';             // B9
-import PostEditor from './components/PostEditor/PostEditor';                // D9
+import WriteReview from './components/WriteReview/WriteReview';
+import PostEditor from './components/PostEditor/PostEditor';
 import {
-  PostSaved,              // D15
-  ReservationSent,        // B6
-  ReviewRequestDeclined,  // B12
-  ReviewRequestSent,      // B8
-  ReviewSubmitted,        // B13
+  PostSaved,
+  ReservationSent,
+  ReviewRequestDeclined,
+  ReviewRequestSent,
+  ReviewSubmitted,
 } from './components/StatusScreens/StatusScreens';
 
 import { displayNameFor } from './components/BoarderTopBar/BoarderTopBar';
 import { LISTINGS } from './components/BoarderHome/listings';
 import { reviewsFor } from './data/reviews';
-import { BOARDER_THREADS, OWNER_THREADS, nextMessageId, nowLabel, personalizeThreads } from './data/messages';
 import {
-  BOARDER_PROFILE, OWNER_EXTRA_LISTINGS, OWNER_LISTING_IDS, OWNER_PROFILE, blankBoarderProfile,
+  BOARDER_THREADS, OWNER_THREADS, nextMessageId, nowLabel, personalizeThreads, reviveThreads,
+} from './data/messages';
+import usePersistentState from './hooks/usePersistentState';
+import {
+  BOARDER_PROFILE, OWNER_EXTRA_LISTINGS, OWNER_LISTING_IDS, OWNER_PROFILE, blankBoarderProfile, blankOwnerProfile,
 } from './data/profiles';
 
 const INITIAL_OWNER_LISTINGS = [
@@ -41,19 +41,54 @@ const INITIAL_OWNER_LISTINGS = [
   ...OWNER_EXTRA_LISTINGS,
 ];
 
-// The owner-side thread that belongs to the boarder who asks to review (Figma: Maria Santos).
 const REQUESTER_THREAD_ID = 'maria';
 
-/* Append a message to a thread and move that thread to the top of the list. */
-const withMessage = (threads, threadId, text, from = 'me') => {
+/* Append a message to a thread and move that thread to the top of the list.
+   `incoming` marks a message from the other side, which adds to the unread count. */
+const withMessage = (threads, threadId, text, from = 'me', incoming = false) => {
   const thread = threads.find((t) => t.id === threadId);
   if (!thread) return threads;
   const updated = {
     ...thread,
     time: 'now',
+    unread: incoming ? (thread.unread ?? 0) + 1 : thread.unread,
     messages: [...thread.messages, { id: nextMessageId(), from, text, time: nowLabel() }],
   };
   return [updated, ...threads.filter((t) => t.id !== threadId)];
+};
+
+/* Owner threads with the logged-in boarder (the seeded requester thread, or one started by the boarder).
+   Each one is paired with the boarder's thread about the same listing. */
+const isBoarderChat = (thread) => thread.id === REQUESTER_THREAD_ID || thread.withBoarder;
+
+const newBoarderThread = (listing) => ({
+  id: listing.id,
+  listingId: listing.id,
+  contact: listing.owner,
+  context: listing.name,
+  detail: `Owner · ${listing.name}`,
+  time: 'now',
+  unread: 0,
+  messages: [],
+});
+
+const newOwnerThread = (listing) => ({
+  id: `boarder-${listing.id}`,
+  listingId: listing.id,
+  withBoarder: true,
+  contact: '',
+  color: '#1d4ed8',
+  detail: `Student · Re: ${listing.name}`,
+  time: 'now',
+  unread: 0,
+  messages: [],
+});
+
+/* Deliver a message into the other side's thread for `listing`, creating that thread if needed. */
+const deliver = (threads, matches, create, text, from) => {
+  const existing = threads.find(matches);
+  const thread = existing ?? create();
+  return withMessage(existing ? threads : [thread, ...threads], thread.id, text, from, true);
 };
 
 const accountKey = (email = '') => email.trim().toLowerCase();
@@ -61,46 +96,50 @@ const accountKey = (email = '') => email.trim().toLowerCase();
 function App() {
   const [screen, setScreen] = useState('welcome');
 
-  // ---------- Sessions ----------
-  const [boarder, setBoarder] = useState(null);           // { email, name }
-  const [owner, setOwner] = useState(null);               // { email, name }
-  const [boarderProfile, setBoarderProfile] = useState(BOARDER_PROFILE);
-  const [ownerProfile, setOwnerProfile] = useState(OWNER_PROFILE);
+  const [boarder, setBoarder] = useState(null);
+  const [owner, setOwner] = useState(null);
+  const [boarderProfile, setBoarderProfile] = usePersistentState('boarderProfile', BOARDER_PROFILE);
+  const [ownerProfile, setOwnerProfile] = usePersistentState('ownerProfile', OWNER_PROFILE);
 
-  // ---------- Registered accounts (in-memory until there is a backend) ----------
-  const [accounts, setAccounts] = useState({ boarder: {}, owner: {} }); // { [role]: { [email]: account } }
-  const [signup, setSignup] = useState(null); // { role, email } — just registered, shown on the login screen
+  const [accounts, setAccounts] = usePersistentState('accounts', { boarder: {}, owner: {} });
+  const [signup, setSignup] = useState(null);
 
-  // ---------- Shared app data (kept across log-outs so both roles can see the same requests) ----------
-  const [ownerListings, setOwnerListings] = useState(INITIAL_OWNER_LISTINGS);
+  const [ownerListings, setOwnerListings] = usePersistentState('ownerListings', INITIAL_OWNER_LISTINGS);
   const [selectedId, setSelectedId] = useState(null);
-  const [reservation, setReservation] = useState(null);           // { listingId, status }
-  const [reviewRequests, setReviewRequests] = useState({});       // { [listingId]: { status, by } }
-  const [submittedReviews, setSubmittedReviews] = useState({});   // { [listingId]: review[] }
+  const [reservation, setReservation] = useState(null);
+  const [reviewRequests, setReviewRequests] = useState({});
+  const [submittedReviews, setSubmittedReviews] = useState({});
   const [lastReview, setLastReview] = useState(null);
-  const [boarderThreads, setBoarderThreads] = useState(BOARDER_THREADS);
-  const [ownerThreads, setOwnerThreads] = useState(OWNER_THREADS);
+  const [boarderThreads, setBoarderThreads] = usePersistentState(
+    'boarderThreads', BOARDER_THREADS, (stored) => reviveThreads(stored, BOARDER_THREADS));
+  const [ownerThreads, setOwnerThreads] = usePersistentState(
+    'ownerThreads', OWNER_THREADS, (stored) => reviveThreads(stored, OWNER_THREADS));
   const [activeThreadId, setActiveThreadId] = useState(null);
-  const [editingListing, setEditingListing] = useState(null);     // D9: null = new post
-  const [savedListing, setSavedListing] = useState(null);         // D15
+  const [editingListing, setEditingListing] = useState(null);
+  const [savedListing, setSavedListing] = useState(null);
 
-  // Every screen change starts at the top of the page.
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [screen]);
 
-  // ---------- Derived data ----------
-  // Owner edits to a public listing (e.g. Sampaguita) show up in the feed; brand-new posts stay
-  // off the feed until credentials are approved, as the Figma copy says.
+  const ownerName = ownerProfile.name;
+
+  // Every post in ownerListings belongs to the current owner, so it always shows their name.
+  const myListings = useMemo(
+    () => ownerListings.map((l) => ({ ...l, owner: ownerName })), [ownerListings, ownerName]);
+  const ownedIds = useMemo(() => new Set(myListings.map((l) => l.id)), [myListings]);
+
+  // Owner edits to a public listing show up in the feed; brand-new posts stay off the feed
+  // until the owner's credentials are approved.
   const feedListings = useMemo(() => {
-    const byId = Object.fromEntries(ownerListings.map((l) => [l.id, l]));
+    const byId = Object.fromEntries(myListings.map((l) => [l.id, l]));
     return LISTINGS.map((l) => byId[l.id] ?? l);
-  }, [ownerListings]);
+  }, [myListings]);
 
   const allListings = useMemo(() => {
     const ids = new Set(feedListings.map((l) => l.id));
-    return [...feedListings, ...ownerListings.filter((l) => !ids.has(l.id))];
-  }, [feedListings, ownerListings]);
+    return [...feedListings, ...myListings.filter((l) => !ids.has(l.id))];
+  }, [feedListings, myListings]);
 
   const selectedListing = allListings.find((l) => l.id === selectedId) ?? null;
   const listingNames = useMemo(() => Object.fromEntries(allListings.map((l) => [l.id, l.name])), [allListings]);
@@ -111,21 +150,24 @@ function App() {
 
   const boarderName = boarderProfile.name;
   const boarderSession = { role: 'boarder', email: boarder?.email, name: boarderName };
-  const ownerSession = { role: 'owner', email: owner?.email, name: ownerProfile.name };
+  const ownerSession = { role: 'owner', email: owner?.email, name: ownerName };
   const statsFor = (listing) => (listing ? reviewsFor(listing.id, submittedReviews[listing.id]) : null);
 
-  // Owner inbox: the requester's thread carries the review request (D12–D14).
   // Sample greetings ("Hello …!") and the requester's thread use the logged-in boarder's name.
+  // Boarder chats about the current owner's houses show the owner's current name.
   const boarderThreadsView = useMemo(
-    () => personalizeThreads(boarderThreads, boarderName), [boarderThreads, boarderName]);
+    () => personalizeThreads(boarderThreads, boarderName)
+      .map((t) => (ownedIds.has(t.listingId) ? { ...t, contact: ownerName } : t)),
+    [boarderThreads, boarderName, ownedIds, ownerName]);
 
+  // Owner inbox: chats with the logged-in boarder show their name; the requester's thread carries the review request.
   const ownerThreadsView = useMemo(() => personalizeThreads(ownerThreads, boarderName).map((t) => {
-    if (t.id !== REQUESTER_THREAD_ID) return t;
+    if (!isBoarderChat(t)) return t;
+    if (t.id !== REQUESTER_THREAD_ID) return { ...t, contact: boarderName };
     const request = reviewRequests[t.listingId];
     return request ? { ...t, contact: request.by, requester: request.by } : t;
   }), [ownerThreads, reviewRequests, boarderName]);
 
-  // ---------- Navigation helpers ----------
   const go = setScreen;
 
   const logout = () => {
@@ -149,19 +191,9 @@ function App() {
   // Boarder → Messages, optionally opening (or starting) the conversation about a listing.
   const openBoarderMessages = (listing) => {
     if (listing) {
-      setBoarderThreads((threads) => (threads.some((t) => t.id === listing.id) ? threads : [
-        {
-          id: listing.id,
-          listingId: listing.id,
-          contact: listing.owner,
-          context: listing.name,
-          detail: `Owner · ${listing.name}`,
-          time: 'now',
-          unread: 0,
-          messages: [],
-        },
-        ...threads,
-      ]));
+      setBoarderThreads((threads) => (threads.some((t) => t.id === listing.id)
+        ? threads
+        : [newBoarderThread(listing), ...threads]));
       setActiveThreadId(listing.id);
     } else {
       setActiveThreadId(null);
@@ -175,13 +207,32 @@ function App() {
   };
 
   // `from` is 'me' for typed/quick-reply messages and 'bot' for the boarder's auto-reply helper.
-  const sendMessage = (role) => (threadId, text, from = 'me') =>
-    (role === 'owner' ? setOwnerThreads : setBoarderThreads)((threads) => withMessage(threads, threadId, text, from));
+  // Messages in a boarder ↔ current-owner chat are also delivered to the other side's inbox.
+  const sendMessage = (role) => (threadId, text, from = 'me') => {
+    const incomingAs = from === 'me' ? 'them' : from;
+
+    if (role === 'owner') {
+      setOwnerThreads((threads) => withMessage(threads, threadId, text, from));
+      const thread = ownerThreads.find((t) => t.id === threadId);
+      const listing = thread && isBoarderChat(thread) && allListings.find((l) => l.id === thread.listingId);
+      if (!listing) return;
+      setBoarderThreads((threads) => deliver(
+        threads, (t) => t.listingId === listing.id, () => newBoarderThread(listing), text, incomingAs));
+      return;
+    }
+
+    setBoarderThreads((threads) => withMessage(threads, threadId, text, from));
+    const thread = boarderThreads.find((t) => t.id === threadId);
+    const listing = thread && ownedIds.has(thread.listingId) && allListings.find((l) => l.id === thread.listingId);
+    if (!listing) return;
+    setOwnerThreads((threads) => deliver(
+      threads, (t) => isBoarderChat(t) && t.listingId === listing.id, () => newOwnerThread(listing), text, incomingAs));
+  };
 
   const markBoarderRead = useCallback(
-    (id) => setBoarderThreads((ts) => ts.map((t) => (t.id === id ? { ...t, unread: 0 } : t))), []);
+    (id) => setBoarderThreads((ts) => ts.map((t) => (t.id === id ? { ...t, unread: 0 } : t))), [setBoarderThreads]);
   const markOwnerRead = useCallback(
-    (id) => setOwnerThreads((ts) => ts.map((t) => (t.id === id ? { ...t, unread: 0 } : t))), []);
+    (id) => setOwnerThreads((ts) => ts.map((t) => (t.id === id ? { ...t, unread: 0 } : t))), [setOwnerThreads]);
 
   const setRequestStatus = (listingId, status) =>
     setReviewRequests((prev) => ({ ...prev, [listingId]: { by: prev[listingId]?.by ?? boarderName, status } }));
@@ -223,9 +274,7 @@ function App() {
     onLogout: logout,
   };
 
-  // ---------- Screens ----------
   switch (screen) {
-    /* ===== Entry ===== */
     case 'boarder-login':
       return (
         <BoarderLogin
@@ -266,7 +315,10 @@ function App() {
             const account = findAccount('owner', email, password);
             const name = account?.fullName ?? displayNameFor({ email, role: 'owner' });
             setOwner({ email, name });
-            setOwnerProfile((p) => ({ ...p, email, name, ...(account && { phone: account.contactNumber }) }));
+            // Same owner logging back in keeps their edits; anyone else starts without the sample owner's details.
+            setOwnerProfile((p) => (accountKey(p.email) === accountKey(email)
+              ? { ...p, name, ...(account && { phone: account.contactNumber }) }
+              : blankOwnerProfile({ name, email, phone: account?.contactNumber })));
             setSignup(null);
             go('owner-home');
           }}
@@ -289,13 +341,11 @@ function App() {
     case 'credentialsReview':
       return <CredentialsUnderReview onContinue={() => go('owner-home')} />;
 
-    /* ===== Boarder ===== */
     case 'boarder-home':
       return (
         <BoarderHome
           listings={feedListings}
-          email={boarder?.email}
-          name={boarderName}
+          session={boarderSession}
           onOpenMessages={openBoarderMessages}
           onViewPost={(l) => openPost(l)}
           onOpenProfile={boarderNav.onOpenProfile}
@@ -310,8 +360,7 @@ function App() {
           listing={selectedListing}
           reviewStats={statsFor(selectedListing)}
           reserved={reservation?.listingId === selectedListing.id}
-          email={boarder?.email}
-          name={boarderName}
+          session={boarderSession}
           onBack={() => go('boarder-home')}
           onMessageOwner={openBoarderMessages}
           onReserve={(l) => {
@@ -459,14 +508,11 @@ function App() {
         />
       );
 
-    /* ===== Owner ===== */
     case 'owner-home':
       return (
         <BoarderHome
-          role="owner"
+          session={ownerSession}
           listings={feedListings}
-          email={owner?.email}
-          name={ownerProfile.name}
           onViewPost={(l) => openPost(l, 'owner')}
           onPost={ownerNav.onPost}
           onOpenMessages={ownerNav.onOpenMessages}
@@ -479,11 +525,9 @@ function App() {
       if (!selectedListing) return null;
       return (
         <PostDetails
-          role="owner"
+          session={ownerSession}
           listing={selectedListing}
           reviewStats={statsFor(selectedListing)}
-          email={owner?.email}
-          name={ownerProfile.name}
           onBack={() => go('owner-home')}
           onOpenReviews={(l) => openReviews(l, 'owner')}
           onPost={ownerNav.onPost}
@@ -512,7 +556,7 @@ function App() {
           session={ownerSession}
           nav={ownerNav}
           listing={editingListing}
-          ownerName={ownerProfile.name}
+          ownerName={ownerName}
           onDiscard={() => go(editingListing ? 'owner-profile' : 'owner-home')}
           onSave={(listing) => {
             setOwnerListings((prev) => (prev.some((l) => l.id === listing.id)
@@ -558,7 +602,7 @@ function App() {
           session={ownerSession}
           nav={ownerNav}
           profile={ownerProfile}
-          ownerListings={ownerListings}
+          ownerListings={myListings}
           currentBoarders={ownerThreadsView.map((t) => ({ name: t.contact, color: t.color }))}
           boarderCount={ownerProfile.boarders}
           rating={reviewsFor(OWNER_LISTING_IDS[0], submittedReviews[OWNER_LISTING_IDS[0]]).average}
@@ -580,7 +624,6 @@ function App() {
         />
       );
 
-    /* ===== Welcome (default) ===== */
     default:
       return (
         <WelcomeRoleSelect

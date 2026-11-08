@@ -11,8 +11,6 @@ const slotsTone = (n) => (n <= 0 ? ui.chipGray : n === 1 ? ui.chipRed : ui.chipG
 const GENDER_TAG = { girls: s.tagPink, boys: s.tagBlue, mixed: s.tagGreen };
 const ROOM_TAG = { shared: s.tagGray, studio: s.tagYellow };
 
-/* ---------- B6 · Reservation Request Sent (15:1046) ---------- */
-
 export function ReservationSent({ session, nav, listing, onMessageOwner, onBackHome }) {
   return (
     <StatusScreen
@@ -38,8 +36,7 @@ export function ReservationSent({ session, nav, listing, onMessageOwner, onBackH
   );
 }
 
-/* ---------- B8 · Review Request Sent (Waiting for owner) (17:190) ----------
-   The two "(preview)" buttons come from the Figma frame: they simulate the owner's answer. */
+/* The two "(preview)" buttons simulate the owner's answer. */
 
 export function ReviewRequestSent({ session, nav, listing, onBackToPost, onPreviewAccepted, onPreviewDeclined }) {
   return (
@@ -69,8 +66,6 @@ export function ReviewRequestSent({ session, nav, listing, onBackToPost, onPrevi
   );
 }
 
-/* ---------- B12 · Review Request Declined (22:357) ---------- */
-
 export function ReviewRequestDeclined({ session, nav, listing, onBackToPost, onMessageOwner }) {
   return (
     <StatusScreen
@@ -91,8 +86,6 @@ export function ReviewRequestDeclined({ session, nav, listing, onBackToPost, onM
     </StatusScreen>
   );
 }
-
-/* ---------- B13 · Review Submitted (22:408) ---------- */
 
 export function ReviewSubmitted({ session, nav, listing, review, onSeeReviews, onBackHome }) {
   return (
@@ -128,8 +121,6 @@ export function ReviewSubmitted({ session, nav, listing, review, onSeeReviews, o
     </StatusScreen>
   );
 }
-
-/* ---------- D15 · Post Saved (22:151) ---------- */
 
 export function PostSaved({ session, nav, listing, onEditAgain, onViewHome }) {
   return (

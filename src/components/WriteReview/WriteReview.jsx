@@ -8,8 +8,6 @@ import { REVIEW_TAGS } from '../../data/reviews';
 const RATING_WORDS = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
 const MIN_LENGTH = 10;
 
-/* ---------- B9 · Write a Review (Owner accepted) (17:265) ---------- */
-
 export default function WriteReview({ session, nav, listing, onCancel, onSubmit }) {
   const id = useId();
   const [rating, setRating] = useState(0);

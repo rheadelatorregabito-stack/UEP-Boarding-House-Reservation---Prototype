@@ -1,9 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import styles from './BoarderLogin.module.css';
 
-/* ---------- Icons — paths exported from Figma (icon/home, back, mail, lock, eye, check) ----------
-   All icons share a 24-unit grid with a 2-unit stroke; colour comes from `currentColor`. */
-
 const Icon = ({ size = 20, children }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
     strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -52,8 +49,6 @@ const CheckIcon = () => (
   </Icon>
 );
 
-/* ---------- Illustration (Figma "Photo" frame) — DOM order matches Figma layer order ---------- */
-
 const HouseIllustration = () => (
   <div className={styles.photo} aria-hidden="true">
     <span className={styles.ground} />
@@ -67,8 +62,6 @@ const HouseIllustration = () => (
   </div>
 );
 
-/* ---------- Helpers ---------- */
-
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const validateEmail = (value) => {
@@ -81,8 +74,6 @@ const errorText = (error, fallback) => error?.message || fallback;
 
 // Used when no onForgotPassword handler is passed, so the flow still works without a backend.
 const mockSendResetLink = () => new Promise((resolve) => setTimeout(resolve, 1000));
-
-/* ---------- Shared input row (Figma "field:*" frames) ---------- */
 
 function Field({ id, label, icon, error, trailing, ...inputProps }) {
   const errorId = `${id}-error`;
@@ -105,26 +96,22 @@ function Field({ id, label, icon, error, trailing, ...inputProps }) {
   );
 }
 
-/* ---------- Screen: "B2 · Boarder Log in" (node 15:54) ---------- */
-
 export default function BoarderLogin({ onLogin, onBack, onForgotPassword, onCreateAccount, initialEmail = '', notice = '' }) {
   const id = useId();
   const headingRef = useRef(null);
   const isFirstRender = useRef(true);
 
-  const [view, setView] = useState('login'); // 'login' | 'forgot'
+  const [view, setView] = useState('login');
 
-  // Log in
-  const [email, setEmail] = useState(initialEmail); // pre-filled after registering
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: '', password: '' });
-  const [login, setLogin] = useState({ status: 'idle', message: '' }); // idle | loading | error
+  const [login, setLogin] = useState({ status: 'idle', message: '' });
 
-  // Forgot password
   const [resetEmail, setResetEmail] = useState('');
   const [resetError, setResetError] = useState('');
-  const [reset, setReset] = useState({ status: 'idle', message: '' }); // idle | sending | sent | error
+  const [reset, setReset] = useState({ status: 'idle', message: '' });
 
   // Move focus to the new heading when switching views, so keyboard and screen-reader users follow along.
   useEffect(() => {
@@ -134,8 +121,6 @@ export default function BoarderLogin({ onLogin, onBack, onForgotPassword, onCrea
     }
     headingRef.current?.focus();
   }, [view]);
-
-  /* ----- Log in ----- */
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -157,10 +142,8 @@ export default function BoarderLogin({ onLogin, onBack, onForgotPassword, onCrea
     }
   };
 
-  /* ----- Forgot password ----- */
-
   const openForgotPassword = () => {
-    setResetEmail(email); // carry over whatever was already typed
+    setResetEmail(email);
     setResetError('');
     setReset({ status: 'idle', message: '' });
     setView('forgot');
@@ -187,8 +170,6 @@ export default function BoarderLogin({ onLogin, onBack, onForgotPassword, onCrea
     if (reset.status === 'sent') setEmail(resetEmail.trim());
     setView('login');
   };
-
-  /* ----- Render ----- */
 
   const isLoggingIn = login.status === 'loading';
   const isSendingReset = reset.status === 'sending';

@@ -11,10 +11,6 @@ const slotsChip = (slotsLeft) => {
 
 const ownerInitial = (owner) => owner.replace(/^(Mr|Mrs|Ms|Dr)\.?\s+/i, '').charAt(0).toUpperCase();
 
-/* ---------- Figma "Card: …" frames inside B3 Grid ---------- */
-
-/* `viewOnly` = owner mode (Figma D5): no message button, plus a note that reserving and messaging
-   are for boarders. */
 export default function ListingCard({ listing, onMessage, onView, viewOnly = false }) {
   const titleId = useId();
   const { name, rating, zone, area, gender, roomType, owner, price, slotsLeft, palette } = listing;
