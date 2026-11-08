@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import styles from './Messages.module.css';
 import { Avatar, Screen, cx, ui } from '../shared/ui';
 import { BackIcon, BellIcon, CheckIcon, ClockIcon, CloseIcon, EditIcon, SearchIcon, SendIcon } from '../BoarderHome/icons';
-import { QUICK_REPLIES, helperReplyFor } from '../../data/messages';
+import { QUICK_REPLIES, helperReplyFor, topicsFor } from '../../data/messages';
 
 function RequestCard({ isOwner, status, requester, listingName, onAccept, onDecline, onWriteReview }) {
   if (status === 'pending') {
@@ -139,22 +139,27 @@ export default function Messages({
     setMobileThreadOpen(true);
   };
 
+  // Boarder messages get the helper's answer for each topic the listing data covers; owners reply themselves.
+  const activeListing = active ? listings.find((l) => l.id === active.listingId) : null;
+  const sendWithAutoReply = (text, topics) => {
+    if (!active) return;
+    onSend?.(active.id, text);
+    if (isOwner) return;
+    topics
+      .map((topic) => helperReplyFor(topic, activeListing))
+      .filter(Boolean)
+      .forEach((reply) => onSend?.(active.id, reply, 'bot'));
+  };
+
   const send = (e) => {
     e.preventDefault();
     const text = draft.trim();
-    if (!text || !active) return;
-    onSend?.(active.id, text);
+    if (!text) return;
+    sendWithAutoReply(text, topicsFor(text));
     setDraft('');
   };
 
-  // Boarder quick reply: send the question, then add the helper's answer when the listing data covers it.
-  const activeListing = active ? listings.find((l) => l.id === active.listingId) : null;
-  const sendQuickReply = ({ text, topic }) => {
-    if (!active) return;
-    onSend?.(active.id, text);
-    const reply = helperReplyFor(topic, activeListing);
-    if (reply) onSend?.(active.id, reply, 'bot');
-  };
+  const sendQuickReply = ({ text, topic }) => sendWithAutoReply(text, [topic]);
 
   const viewRequest = () => {
     openThread(pendingThread.id);

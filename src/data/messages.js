@@ -166,8 +166,23 @@ export const QUICK_REPLIES = [
   { id: 'slots', text: 'Is there a vacant slot?', topic: 'slots' },
   { id: 'rent', text: 'How much is the monthly rent?', topic: 'price' },
   { id: 'payment', text: 'What are the payment terms?', topic: 'payment' },
-  { id: 'visit', text: 'Can I schedule a visit?' },
+  { id: 'visit', text: 'Can I schedule a visit?', topic: 'visit' },
 ];
+
+/* Keywords that let the helper answer typed messages too. */
+const TOPIC_KEYWORDS = [
+  ['slots', /\b(slots?|vacant|vacancy|available|availability|bakante)\b/i],
+  ['price', /\b(rent|price|how much|magkano|cost|monthly)\b|₱/i],
+  ['payment', /\b(payments?|pay|deposit|advance|due dates?|downpayment)\b/i],
+  ['visit', /\b(visit|schedule|tour|see the (room|place|unit|house))\b/i],
+  ['amenities', /\b(wi-?fi|internet|amenities|cr|bathroom|kitchen|cook|cooking|water|aircon|laundry)\b/i],
+];
+
+/* Every topic a typed message asks about. The payment answer already states the rent, so it replaces the price one. */
+export function topicsFor(text = '') {
+  const topics = TOPIC_KEYWORDS.filter(([, pattern]) => pattern.test(text)).map(([topic]) => topic);
+  return topics.includes('payment') ? topics.filter((t) => t !== 'price') : topics;
+}
 
 /* Mock auto-reply built from the listing the conversation is about. Returns null when the
    question isn't one the helper handles, or the listing isn't known. */
@@ -193,6 +208,13 @@ export function helperReplyFor(topic, listing) {
     case 'payment':
       return `Listed rent is ${rent}. Deposit, advance and due dates are set by ${listing.owner}, `
         + 'who will confirm them in this chat.';
+    case 'visit':
+      return `${listing.name} is in Zone ${listing.zone}, ${listing.area}${listing.distance ? ` (${listing.distance})` : ''}. `
+        + `${listing.owner} will reply here to confirm a day and time for your visit.`;
+    case 'amenities':
+      return listing.amenities?.length
+        ? `${listing.name} offers: ${listing.amenities.join(', ')}. Ask ${listing.owner} here about anything not listed.`
+        : `${listing.owner} will reply here with the amenities at ${listing.name}.`;
     default:
       return null;
   }

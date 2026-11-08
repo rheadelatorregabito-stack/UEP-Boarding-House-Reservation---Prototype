@@ -104,3 +104,60 @@ test('messages are still there after a page refresh', async () => {
   openChat('Lourdes Cabal');
   expect(activeChat().getByText('Saved before refresh')).toBeInTheDocument();
 });
+
+const autoReplies = () => activeChat()
+  .queryAllByText((_, bubble) => bubble.tagName === 'P' && bubble.textContent.startsWith('Auto-reply'))
+  .map((bubble) => bubble.textContent);
+
+test('the auto-reply answers quick replies from the listing details', async () => {
+  render(<App />);
+  await logIn('boarder', 'ana.reyes@uep.edu.ph');
+  goTo(/messages/i);
+  openChat('Ramon Abella');
+
+  fireEvent.click(screen.getByRole('button', { name: 'Is there a vacant slot?' }));
+  fireEvent.click(screen.getByRole('button', { name: 'How much is the monthly rent?' }));
+  fireEvent.click(screen.getByRole('button', { name: 'What are the payment terms?' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Can I schedule a visit?' }));
+
+  const replies = autoReplies();
+  expect(replies).toHaveLength(4);
+  expect(replies[0]).toMatch(/Villa Marites Rooms has 1 slot left out of 8/);
+  expect(replies[1]).toMatch(/Rent at Villa Marites Rooms is ₱2,500 per month/);
+  expect(replies[2]).toMatch(/Deposit, advance and due dates are set by Mr\. Ramon Abella/);
+  expect(replies[3]).toMatch(/Mr\. Ramon Abella will reply here to confirm a day and time for your visit/);
+});
+
+test('the auto-reply answers typed questions, and only when it knows the answer', async () => {
+  render(<App />);
+  await logIn('boarder', 'ana.reyes@uep.edu.ph');
+  goTo(/messages/i);
+  openChat('Ramon Abella');
+
+  sendMessage('Hi po, good morning!');
+  expect(autoReplies()).toHaveLength(0);
+
+  sendMessage('Is a room still available, and is WiFi included?');
+  const replies = autoReplies();
+  expect(replies).toHaveLength(2);
+  expect(replies[0]).toMatch(/slot left/);
+  expect(replies[1]).toMatch(/Villa Marites Rooms offers: .*Free WiFi/);
+});
+
+test('auto-replies in a chat with the owner also reach the owner, who gets none of their own', async () => {
+  render(<App />);
+  await logIn('boarder', 'ana.reyes@uep.edu.ph');
+  goTo(/messages/i);
+  openChat('Lourdes Cabal');
+  sendMessage('How much is the rent?');
+  logOut();
+
+  await logIn('owner', 'lourdes.cabal@email.com');
+  goTo(/messages/i);
+  openChat('Ana Reyes');
+  expect(activeChat().getByText('How much is the rent?')).toBeInTheDocument();
+  expect(autoReplies()).toHaveLength(1);
+
+  sendMessage('Rent is ₱1,800, how much can you pay as deposit?');
+  expect(autoReplies()).toHaveLength(1);
+});
