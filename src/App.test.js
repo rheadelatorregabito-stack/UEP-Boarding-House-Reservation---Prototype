@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import App from './App';
 
 beforeAll(() => {
@@ -160,4 +160,50 @@ test('auto-replies in a chat with the owner also reach the owner, who gets none 
 
   sendMessage('Rent is ₱1,800, how much can you pay as deposit?');
   expect(autoReplies()).toHaveLength(1);
+});
+
+const mockCamera = () => {
+  const track = { stop: () => {}, addEventListener: () => {} };
+  const stream = { getTracks: () => [track], getVideoTracks: () => [track] };
+  Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => stream } });
+  Object.defineProperty(HTMLVideoElement.prototype, 'videoWidth', { configurable: true, get: () => 640 });
+  Object.defineProperty(HTMLVideoElement.prototype, 'videoHeight', { configurable: true, get: () => 480 });
+  HTMLCanvasElement.prototype.getContext = () => ({ drawImage: () => {} });
+  HTMLCanvasElement.prototype.toDataURL = () => 'data:image/jpeg;base64,AAAA';
+  global.fetch = async () => ({ blob: async () => new Blob(['photo'], { type: 'image/jpeg' }) });
+};
+
+const submitOwnerLogin = () => {
+  fireEvent.change(screen.getByLabelText(/^email$/i), { target: { value: 'pedro.cruz@email.com' } });
+  fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'secret123' } });
+  fireEvent.click(screen.getByRole('button', { name: /^log in$/i }));
+};
+
+test('a new owner must send credentials before reaching the dashboard', async () => {
+  mockCamera();
+  render(<App />);
+
+  fireEvent.click(screen.getByRole('button', { name: /log in as owner/i }));
+  submitOwnerLogin();
+  expect(await screen.findByRole('heading', { name: 'Send your credentials' })).toBeInTheDocument();
+  expect(await screen.findByText('Camera on')).toBeInTheDocument();
+  expect(screen.queryByRole('navigation', { name: 'Main' })).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Go back' }));
+  expect(screen.getByRole('button', { name: /^log in$/i })).toBeInTheDocument();
+
+  submitOwnerLogin();
+  await screen.findByText('Camera on');
+  fireEvent.click(screen.getByRole('button', { name: /^capture/i }));
+  await waitFor(() => expect(screen.getByRole('button', { name: /^capture/i })).toBeDisabled());
+  fireEvent.click(screen.getByRole('button', { name: 'Send credentials' }));
+
+  expect(await screen.findByRole('heading', { name: 'Credentials sent!' }, { timeout: 3000 })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: /continue/i }));
+  expect(await screen.findByRole('navigation', { name: 'Main' })).toBeInTheDocument();
+
+  logOut();
+  await logIn('owner', 'pedro.cruz@email.com');
+  goTo(/profile/i);
+  expect(screen.getByText('Credentials under review')).toBeInTheDocument();
 });

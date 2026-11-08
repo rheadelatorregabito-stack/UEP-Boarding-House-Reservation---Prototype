@@ -43,6 +43,8 @@ const INITIAL_OWNER_LISTINGS = [
 
 const REQUESTER_THREAD_ID = 'maria';
 
+const PRE_DASHBOARD_SCREENS = new Set(['owner-login', 'owner-register', 'owner-credentials', 'owner-credentials-review']);
+
 /* Append a message to a thread and move that thread to the top of the list.
    `incoming` marks a message from the other side, which adds to the unread count. */
 const withMessage = (threads, threadId, text, from = 'me', incoming = false) => {
@@ -103,6 +105,9 @@ function App() {
 
   const [accounts, setAccounts] = usePersistentState('accounts', { boarder: {}, owner: {} });
   const [signup, setSignup] = useState(null);
+  // Owners who have submitted credentials: { [email]: 'review' | 'approved' }. The sample owner already has.
+  const [ownerCredentials, setOwnerCredentials] = usePersistentState(
+    'ownerCredentials', { [accountKey(OWNER_PROFILE.email)]: 'review' });
 
   const [ownerListings, setOwnerListings] = usePersistentState('ownerListings', INITIAL_OWNER_LISTINGS);
   const [selectedId, setSelectedId] = useState(null);
@@ -274,7 +279,12 @@ function App() {
     onLogout: logout,
   };
 
-  switch (screen) {
+  // An owner who still needs to send credentials can't reach the dashboard or any other owner screen.
+  const activeScreen = owner?.needsCredentials && screen.startsWith('owner-') && !PRE_DASHBOARD_SCREENS.has(screen)
+    ? 'owner-credentials'
+    : screen;
+
+  switch (activeScreen) {
     case 'boarder-login':
       return (
         <BoarderLogin
@@ -314,13 +324,14 @@ function App() {
           onSubmit={({ email, password }) => {
             const account = findAccount('owner', email, password);
             const name = account?.fullName ?? displayNameFor({ email, role: 'owner' });
-            setOwner({ email, name });
+            const needsCredentials = !ownerCredentials[accountKey(email)];
+            setOwner({ email, name, needsCredentials });
             // Same owner logging back in keeps their edits; anyone else starts without the sample owner's details.
             setOwnerProfile((p) => (accountKey(p.email) === accountKey(email)
               ? { ...p, name, ...(account && { phone: account.contactNumber }) }
               : blankOwnerProfile({ name, email, phone: account?.contactNumber })));
             setSignup(null);
-            go('owner-home');
+            go(needsCredentials ? 'owner-credentials' : 'owner-home');
           }}
           onCreateAccount={() => go('owner-register')}
         />
@@ -335,10 +346,19 @@ function App() {
         />
       );
 
-    case 'sendCredentials':
-      return <SendCredentials onBack={() => go('owner-login')} onSend={() => go('credentialsReview')} />;
+    case 'owner-credentials':
+      return (
+        <SendCredentials
+          onBack={() => { setOwner(null); go('owner-login'); }}
+          onSend={() => {
+            setOwnerCredentials((prev) => ({ ...prev, [accountKey(owner.email)]: 'review' }));
+            setOwner((o) => ({ ...o, needsCredentials: false }));
+            go('owner-credentials-review');
+          }}
+        />
+      );
 
-    case 'credentialsReview':
+    case 'owner-credentials-review':
       return <CredentialsUnderReview onContinue={() => go('owner-home')} />;
 
     case 'boarder-home':
@@ -606,7 +626,7 @@ function App() {
           currentBoarders={ownerThreadsView.map((t) => ({ name: t.contact, color: t.color }))}
           boarderCount={ownerProfile.boarders}
           rating={reviewsFor(OWNER_LISTING_IDS[0], submittedReviews[OWNER_LISTING_IDS[0]]).average}
-          credentialsStatus="review"
+          credentialsStatus={ownerCredentials[accountKey(owner?.email)] ?? 'review'}
           onEditListing={(l) => openEditor(l)}
           onAddListing={() => openEditor(null)}
           onEditProfile={() => go('owner-edit-profile')}
