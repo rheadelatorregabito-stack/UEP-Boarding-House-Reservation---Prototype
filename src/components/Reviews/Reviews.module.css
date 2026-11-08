@@ -1,0 +1,190 @@
+/* B7 · Reviews (17:2) / D8 · Reviews (7:924): 380px summary + 788px list, gap 32. */
+
+.layout {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+/* ---------- Summary ---------- */
+
+.summary {
+  position: sticky;
+  top: 100px;
+  align-items: center;
+  gap: 16px;
+  padding: 28px;
+  border-radius: 28px;
+}
+
+.average {
+  margin: 0;
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 77px;
+}
+
+.based {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--gray-500);
+}
+
+.barStar {
+  width: 8px;
+  font-weight: 700;
+}
+
+.barTrack {
+  flex: 1;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--gray-200);
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  border-radius: 5px;
+  background: var(--yellow-400);
+}
+
+.barCount {
+  min-width: 16px;
+  font-weight: 500;
+}
+
+/* ---------- List ---------- */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.requestCard {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+  border-radius: 24px;
+  background: var(--navy-900);
+  color: var(--white);
+}
+
+.requestIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  background: var(--yellow-400);
+  color: var(--navy-900);
+}
+
+.requestText {
+  flex: 1;
+  min-width: 0;
+}
+
+.requestTitle {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 22px;
+}
+
+.requestBody {
+  margin: 0;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--navy-200);
+}
+
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border-radius: 22px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.reviewHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.reviewWho {
+  flex: 1;
+  min-width: 0;
+}
+
+.reviewName {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 18px;
+}
+
+.reviewWhen {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--gray-500);
+}
+
+.reviewText {
+  margin: 0;
+  font-size: 15px;
+  line-height: 23px;
+  color: var(--gray-700);
+}
+
+.verified {
+  align-self: flex-start;
+  font-weight: 600;
+}
+
+.empty {
+  margin: 0;
+  color: var(--gray-500);
+}
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
+  .summary { position: static; }
+}
+
+@media (max-width: 640px) {
+  .requestCard { flex-wrap: wrap; }
+  .requestCard button { width: 100%; }
+}

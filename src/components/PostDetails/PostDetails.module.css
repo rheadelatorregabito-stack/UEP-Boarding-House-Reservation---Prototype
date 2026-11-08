@@ -1,0 +1,592 @@
+/* Design tokens from Figma frame "B5 · Post Details (Reserve & Message active)" (node 15:896) */
+.screen {
+  --blue-700: #1d4ed8;
+  --blue-100: #dce7ff;
+  --blue-50: #e8f0ff;
+  --sky-300: #9cc3ff;
+  --navy-900: #0b1b4d;
+  --yellow-400: #ffc72c;
+  --yellow-50: #fff6d6;
+  --red-500: #e5383b;
+  --red-50: #fde8e9;
+  --green-600: #16a34a;
+  --green-400: #5bbe7a;
+  --green-50: #e6f7ec;
+  --gray-500: #6b7280;
+  --ink: #0a0a0a;
+  --page-bg: #f4f7fe;
+  --white: #ffffff;
+  --shadow: 0 6px 18px rgba(13, 26, 77, 0.12);
+
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--page-bg);
+  color: var(--navy-900);
+}
+
+.screen *,
+.screen *::before,
+.screen *::after {
+  box-sizing: border-box;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 2rem var(--layout-inline);
+}
+
+/* ---------- Back + breadcrumb ---------- */
+
+.crumbRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--navy-900);
+  cursor: pointer;
+  transition: background 0.2s ease-out;
+}
+
+.backButton:hover {
+  background: var(--blue-50);
+}
+
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 17px;
+  color: var(--gray-500);
+}
+
+.breadcrumb li + li::before {
+  content: '/';
+  margin: 0 8px;
+}
+
+.crumbLink {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.crumbLink:hover {
+  color: var(--blue-700);
+  text-decoration: underline;
+}
+
+/* ---------- Two-column layout (788 + 380, gap 32) ---------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 32px;
+  align-items: start;
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* ---------- Gallery ---------- */
+
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mainPhoto {
+  position: relative;
+  aspect-ratio: 740 / 420;
+  overflow: hidden;
+  border-radius: 28px;
+}
+
+.fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.photoImg {
+  object-fit: cover;
+}
+
+.counter {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  padding: 6px 12px;
+  border-radius: 99px;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 15px;
+}
+
+/* 4 thumbnails fill the row (Figma); any extra scroll sideways */
+.thumbs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 3 * 12px) / 4);
+  gap: 12px;
+  overflow-x: auto;
+  padding: 3px; /* room for the selected ring */
+  margin: -3px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 173 / 110;
+  overflow: hidden;
+  padding: 0;
+  border: none;
+  border-radius: 16px;
+  background: none;
+  cursor: pointer;
+  scroll-snap-align: start;
+  opacity: 0.85;
+  transition: opacity 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.thumb:hover {
+  opacity: 1;
+}
+
+.thumbActive {
+  opacity: 1;
+  box-shadow: 0 0 0 3px var(--blue-700);
+}
+
+/* House illustration — percentages of Figma's 740×420 photo frame */
+.scene {
+  position: relative;
+  overflow: hidden;
+  background: var(--sky);
+}
+
+.scene > span {
+  position: absolute;
+}
+
+.ground {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 25.95%;
+  background: var(--green-400);
+}
+
+.sun {
+  left: 80%;
+  top: 10%;
+  width: 9.05%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--yellow-400);
+}
+
+.houseBody {
+  left: 25%;
+  top: 40%;
+  width: 50%;
+  height: 35.95%;
+  background: var(--body);
+}
+
+.roof {
+  left: 20%;
+  top: 20.24%;
+  width: 60%;
+  height: 20%;
+  background: var(--roof);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.door,
+.window {
+  position: absolute;
+  border-radius: 3px;
+}
+
+.door {
+  left: 41.9%;
+  bottom: 0;
+  width: 15.9%;
+  height: 55%;
+  background: var(--navy-900);
+}
+
+.window {
+  top: 25.2%;
+  width: 20%;
+  height: 21.9%;
+  background: var(--sky-300);
+}
+
+.windowLeft  { left: 10%; }
+.windowRight { right: 10%; }
+
+/* ---------- Cards ---------- */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 28px;
+  border-radius: 24px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 24px;
+}
+
+.description {
+  margin: 0;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--gray-500);
+}
+
+.amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.amenity {
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.blue   { background: var(--blue-50); }
+.yellow { background: var(--yellow-50); }
+.green  { background: var(--green-50); }
+.red    { background: var(--red-50); }
+
+/* Host card */
+.host {
+  flex-direction: row;
+  align-items: center;
+  padding: 20px;
+}
+
+.hostAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--blue-700);
+  color: var(--white);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.hostText {
+  flex: 1;
+  min-width: 0;
+}
+
+.hostName {
+  margin: 0 0 2px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 19px;
+}
+
+.hostMeta {
+  margin: 0;
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--gray-500);
+}
+
+.hostMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  background: var(--blue-50);
+  color: var(--blue-700);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hostMessage:hover {
+  background: var(--blue-100);
+}
+
+/* ---------- Booking column ---------- */
+
+.bookingColumn {
+  position: sticky;
+  top: 100px; /* below the sticky top bar */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bookingCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 28px;
+  border-radius: 28px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 28px;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+}
+
+.priceValue {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 48px;
+  color: var(--blue-700);
+}
+
+.priceUnit {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+.slots {
+  padding: 6px 12px;
+  border-radius: 99px;
+  background: var(--green-600);
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 15px;
+}
+
+.slotsLow  { background: var(--red-500); }
+.slotsFull { background: var(--gray-500); }
+
+.specs {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  margin: 0;
+}
+
+.spec {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  line-height: 16px;
+}
+
+.spec dt {
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+.spec dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+}
+
+.reserveButton,
+.messageButton,
+.reviewButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 19px;
+  cursor: pointer;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.reserveButton,
+.messageButton {
+  height: 56px;
+  box-shadow: var(--shadow);
+}
+
+.reserveButton {
+  background: var(--blue-700);
+  color: var(--white);
+}
+
+.messageButton {
+  background: var(--yellow-400);
+  color: var(--ink);
+}
+
+.reserveButton:hover:not(:disabled),
+.messageButton:hover,
+.reviewButton:hover {
+  transform: translateY(-2px);
+}
+
+.reserveButton:disabled {
+  background: var(--gray-500);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.locked,
+.locked:disabled {
+  background: var(--gray-200);
+  box-shadow: none;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ownerNote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 13px;
+  color: var(--gray-500);
+}
+
+/* Reviews entry */
+.reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border: 1px solid var(--yellow-400);
+  border-radius: 24px;
+  background: var(--yellow-50);
+}
+
+.reviewsSummary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reviewsStar {
+  display: flex;
+  color: var(--yellow-400);
+}
+
+.reviewsScore {
+  margin: 0 0 2px;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 22px;
+}
+
+.reviewsHint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--gray-500);
+}
+
+.reviewButton {
+  height: 48px;
+  background: var(--navy-900);
+  color: var(--white);
+}
+
+/* ---------- Focus ---------- */
+
+.backButton:focus-visible,
+.crumbLink:focus-visible,
+.thumb:focus-visible,
+.hostMessage:focus-visible,
+.reserveButton:focus-visible,
+.messageButton:focus-visible,
+.reviewButton:focus-visible {
+  outline: 3px solid var(--navy-900);
+  outline-offset: 3px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; }
+  .bookingColumn { position: static; }
+}
+
+@media (max-width: 640px) {
+  .mainPhoto { border-radius: 20px; }
+  .card,
+  .bookingCard { padding: 22px; }
+  .priceValue { font-size: 34px; line-height: 40px; }
+  .host { flex-wrap: wrap; }
+  .hostMessage { width: 100%; justify-content: center; }
+  .thumbs { grid-auto-columns: calc((100% - 2 * 12px) / 3); }
+}

@@ -1,0 +1,414 @@
+/* Design tokens taken from the Figma frame "D2 · Owner Log in" (node 6:54) */
+.screen {
+  --blue-700: #1d4ed8;
+  --blue-500: #3b6ff0;
+  --blue-100: #dce7ff;
+  --blue-50: #e8f0ff;
+  --sky-200: #cfe3ff;
+  --sky-300: #9cc3ff;
+  --navy-900: #0b1b4d;
+  --yellow-400: #ffc72c;
+  --red-500: #e5383b;
+  --green-600: #16a34a;
+  --green-400: #5bbe7a;
+  --gray-500: #6b7280;
+  --gray-200: #e5e7eb;
+  --ink: #0a0a0a;
+  --input-bg: #f4f7fe;
+  --white: #ffffff;
+  --shadow: 0 6px 18px rgba(13, 26, 77, 0.12);
+
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--white);
+}
+
+/* ---------- Brand panel (left) ---------- */
+
+.brandPanel {
+  position: relative;
+  flex: 11 1 0; /* 792 / 1440 */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 48px;
+  padding: 72px;
+  overflow: hidden;
+  background: var(--blue-700);
+  color: var(--white);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.blobYellow { width: 380px; height: 380px; top: -130px; right: -58px; background: var(--yellow-400); }
+.blobRed    { width: 220px; height: 220px; bottom: 120px; left: -80px; background: var(--red-500); }
+.blobGreen  { width: 90px;  height: 90px;  bottom: 90px;  right: 92px; background: var(--green-600); }
+.blobBlue   { width: 260px; height: 260px; top: -120px; left: -120px; background: var(--blue-500); }
+
+.logo,
+.hero,
+.footer {
+  position: relative; /* sit above the blobs */
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logoMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--white);
+  color: var(--blue-700);
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+}
+
+.logoName {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.logoTagline {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue-100);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 520px;
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 54px;
+}
+
+.heroText {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--blue-100);
+}
+
+.footer {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue-100);
+}
+
+/* ---------- House illustration ---------- */
+
+.photo {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 520 / 300;
+  border-radius: 32px;
+  overflow: hidden;
+  background: var(--sky-200);
+  box-shadow: var(--shadow);
+}
+
+.photo > span {
+  position: absolute;
+}
+
+/* Positions are percentages of the 520×300 Figma frame so it scales */
+.sun {
+  left: 80%;
+  top: 10%;
+  width: 9.23%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--yellow-400);
+}
+
+.roof {
+  left: 24.02%;
+  top: 20.33%;
+  width: 51.96%;
+  height: 15%;
+  background: var(--red-500);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.houseBody {
+  left: 25%;
+  top: 40%;
+  width: 50%;
+  height: 36%;
+  background: var(--white);
+}
+
+.window,
+.door {
+  position: absolute;
+}
+
+.window {
+  top: 25%;
+  width: 20%;
+  height: 22%;
+  background: var(--sky-300);
+}
+
+.windowLeft  { left: 10%; }
+.windowRight { right: 10%; }
+
+.door {
+  left: 42%;
+  bottom: 0;
+  width: 16%;
+  height: 55%;
+  background: var(--navy-900);
+}
+
+.ground {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 26%;
+  background: var(--green-400);
+}
+
+/* ---------- Form panel (right) ---------- */
+
+.formPanel {
+  flex: 9 1 0; /* 648 / 1440 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: var(--white);
+}
+
+.formContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+  max-width: 460px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--blue-50);
+  color: var(--navy-900);
+  cursor: pointer;
+  transition: background 0.2s ease-out;
+}
+
+.backButton:hover {
+  background: var(--blue-100);
+}
+
+.chip {
+  padding: 6px 12px;
+  border-radius: 99px;
+  background: var(--yellow-400);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 13px;
+}
+
+.title {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 48px;
+  color: var(--navy-900);
+}
+
+/* ---------- Fields ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+
+.inputWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 54px;
+  padding: 0 18px;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  background: var(--input-bg);
+  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.inputWrap:focus-within {
+  border-color: var(--blue-700);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+}
+
+.inputIcon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--gray-500);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  color: var(--navy-900);
+}
+
+.input::placeholder {
+  color: var(--gray-500);
+}
+
+.eyeButton {
+  display: flex;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--gray-500);
+  cursor: pointer;
+}
+
+/* ---------- Links & buttons ---------- */
+
+.link {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--blue-700);
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.forgot {
+  align-self: flex-end;
+}
+
+.signup {
+  align-self: center;
+}
+
+.submit {
+  width: 100%;
+  height: 55px;
+  border: none;
+  border-radius: 16px;
+  background: var(--blue-700);
+  box-shadow: var(--shadow);
+  color: var(--white);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.25s ease-out, box-shadow 0.25s ease-out;
+}
+
+.submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(13, 26, 77, 0.18);
+}
+
+.backButton:focus-visible,
+.eyeButton:focus-visible,
+.link:focus-visible,
+.submit:focus-visible {
+  outline: 3px solid var(--navy-900);
+  outline-offset: 3px;
+}
+
+/* ---------- Notice ---------- */
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--blue-50);
+}
+
+.noticeIcon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--blue-700);
+}
+
+.noticeText {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 19px;
+  color: var(--navy-900);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .screen { flex-direction: column; }
+  .brandPanel { padding: 40px 24px; }
+  .heroTitle { font-size: 34px; line-height: 40px; }
+  .title { font-size: 32px; line-height: 40px; }
+}
+
+.formError {
+  width: 100%;
+  margin: -8px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: center;
+  color: #c81e21; /* darker than --red-500 for 4.5:1 contrast on white */
+}

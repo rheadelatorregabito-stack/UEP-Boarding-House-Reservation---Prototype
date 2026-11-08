@@ -1,0 +1,74 @@
+/* Proportions from the Figma "Photo" frames; the parent sets width/height (or aspect-ratio). */
+.photo {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--sky);
+}
+
+.img {
+  object-fit: cover;
+}
+
+.photo > span {
+  position: absolute;
+}
+
+.ground {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 26%;
+  background: #5bbe7a;
+}
+
+.sun {
+  left: 80%;
+  top: 10%;
+  width: 11%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ffc72c;
+}
+
+.houseBody {
+  left: 25%;
+  top: 40%;
+  width: 50%;
+  height: 36%;
+  background: var(--body);
+}
+
+.roof {
+  left: 20%;
+  top: 20%;
+  width: 60%;
+  height: 20.5%;
+  background: var(--roof);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.door,
+.window {
+  position: absolute;
+  border-radius: 2px;
+}
+
+.door {
+  left: 42%;
+  bottom: 0;
+  width: 16%;
+  height: 55%;
+  background: #0b1b4d;
+}
+
+.window {
+  top: 25%;
+  width: 20%;
+  height: 22%;
+  background: #9cc3ff;
+}
+
+.windowLeft  { left: 10%; }
+.windowRight { right: 10%; }

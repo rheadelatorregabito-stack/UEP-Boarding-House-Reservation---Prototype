@@ -1,0 +1,393 @@
+/* Design tokens from Figma frame "B3 · Boarder Home (Browse & message owners)" (node 15:115).
+   ListingCard and FilterDrawer inherit these custom properties. */
+.screen {
+  --blue-700: #1d4ed8;
+  --blue-500: #3b6ff0;
+  --blue-100: #dce7ff;
+  --blue-50: #e8f0ff;
+  --sky-300: #9cc3ff;
+  --navy-900: #0b1b4d;
+  --yellow-400: #ffc72c;
+  --yellow-50: #fff6d6;
+  --red-500: #e5383b;
+  --green-600: #16a34a;
+  --green-400: #5bbe7a;
+  --green-50: #e6f7ec;
+  --gray-500: #6b7280;
+  --gray-200: #e5e7eb;
+  --ink: #0a0a0a;
+  --page-bg: #f4f7fe;
+  --white: #ffffff;
+  --shadow: 0 6px 18px rgba(13, 26, 77, 0.12);
+
+  /* Spacing scale shared by the boarder (B3) and owner (D5) dashboards and their cards */
+  --space-section: 2rem;      /* 32px — between hero, banner and results */
+  --space-group: 1.25rem;     /* 20px — results header → grid */
+  --space-grid: 1.5rem;       /* 24px — between cards */
+  --card-pad: 1.5rem;         /* 24px — inside cards, banners, empty state */
+  --card-radius: 24px;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--page-bg);
+  color: var(--navy-900);
+}
+
+.screen *,
+.screen *::before,
+.screen *::after {
+  box-sizing: border-box; /* Figma sizes include padding + stroke */
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Page ---------- */
+
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-section);
+  width: 100%;
+  max-width: var(--layout-max);
+  margin: 0 auto;
+  padding: 2rem var(--layout-gutter) 3rem;
+}
+
+/* Results header + grid (or empty state) sit closer together than the page sections. */
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-group);
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-group);
+  overflow: hidden;
+  padding: 3rem;
+  border-radius: 32px;
+  background: var(--blue-700);
+  color: var(--white);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.blobYellow { width: 320px; height: 320px; top: -120px; right: -20px; background: var(--yellow-400); }
+.blobRed    { width: 120px; height: 120px; bottom: -11px; right: 60px; background: var(--red-500); }
+.blobBlue   { width: 120px; height: 120px; bottom: -51px; left: -40px; background: var(--blue-500); }
+
+.heroTitle,
+.heroText,
+.searchRow {
+  position: relative; /* above the blobs */
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 48px;
+}
+
+.heroText {
+  margin: 0;
+  font-size: 16px;
+  line-height: 19px;
+  color: var(--blue-100);
+}
+
+.searchRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchBox {
+  display: flex;
+  flex: 1 1 320px;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 20px;
+  border-radius: 16px;
+  background: var(--white);
+  cursor: text;
+  transition: box-shadow 0.2s ease-out;
+}
+
+.searchBox:focus-within {
+  box-shadow: 0 0 0 3px var(--yellow-400);
+}
+
+.searchIcon {
+  display: flex;
+  color: var(--gray-500);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--navy-900);
+  font: inherit;
+  font-size: 15px;
+}
+
+.searchInput::placeholder {
+  color: var(--gray-500);
+}
+
+.filtersButton,
+.searchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 56px;
+  padding: 0 24px;
+  border: none;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease-out;
+}
+
+.filtersButton:hover,
+.searchButton:hover {
+  transform: translateY(-2px);
+}
+
+.filtersButton {
+  background: var(--yellow-400);
+  color: var(--ink);
+}
+
+.filtersBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--red-500);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.searchButton {
+  background: var(--navy-900);
+  color: var(--white);
+}
+
+/* ---------- Owner view-only banner (D5 "ViewOnlyBanner") ---------- */
+
+.viewOnlyBanner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 1rem var(--card-pad);
+  border: 1px solid var(--yellow-400);
+  border-radius: 16px;
+  background: var(--yellow-50);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.viewOnlyBanner svg {
+  flex-shrink: 0;
+}
+
+/* ---------- Results header ---------- */
+
+.resultsHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resultsTitle {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 31px;
+  scroll-margin-top: 100px; /* clear the sticky top bar */
+}
+
+.resultsTitle:focus {
+  outline: none;
+}
+
+.resultsMeta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.resultsCount {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--blue-700);
+}
+
+.sort {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sort:focus-within {
+  border-color: var(--blue-700);
+}
+
+.sortSelect {
+  padding: 0 24px 0 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.sortChevron {
+  position: absolute;
+  right: 16px;
+  display: flex;
+  color: var(--gray-500);
+  pointer-events: none;
+}
+
+/* ---------- Grid ---------- */
+
+.grid {
+  display: grid;
+  /* 3 columns on a 1320px container, 2 on small laptops/tablets, 1 on phones */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: var(--space-grid);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gridItem {
+  display: flex;
+}
+
+.gridItem > * {
+  flex: 1;
+}
+
+/* ---------- Empty state ---------- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 3.5rem var(--card-pad);
+  border-radius: var(--card-radius);
+  background: var(--white);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.emptyText {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--gray-500);
+}
+
+.emptyButton {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 14px;
+  background: var(--blue-700);
+  color: var(--white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- Footer ---------- */
+
+.footer {
+  padding: 1.75rem var(--layout-gutter);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+/* ---------- Focus ---------- */
+
+.filtersButton:focus-visible,
+.searchButton:focus-visible,
+.emptyButton:focus-visible {
+  outline: 3px solid var(--navy-900);
+  outline-offset: 2px;
+}
+
+.hero .filtersButton:focus-visible,
+.hero .searchButton:focus-visible {
+  outline-color: var(--white);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 640px) {
+  .screen { --space-section: 1.5rem; --space-group: 1rem; --space-grid: 1rem; --card-pad: 1.25rem; }
+  .page { padding-top: 1.5rem; padding-bottom: 2rem; }
+  .hero { padding: 2rem 1.5rem; border-radius: 24px; }
+  .heroTitle { font-size: 30px; line-height: 36px; }
+  .heroText { line-height: 22px; }
+  .filtersButton,
+  .searchButton { flex: 1; }
+}

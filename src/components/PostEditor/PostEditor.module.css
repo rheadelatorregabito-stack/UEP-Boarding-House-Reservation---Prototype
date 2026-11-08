@@ -1,0 +1,263 @@
+/* D9 · Post / Edit Listing (12:2): 768px "FormCard" + 400px "Preview", gap 32. */
+
+.subtitle {
+  margin: 4px 0 0;
+  font-size: 15px;
+  line-height: 18px;
+  color: var(--gray-500);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 32px;
+  align-items: start;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 32px;
+  border-radius: 28px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 22px;
+}
+
+/* ---------- Photos ---------- */
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 16px;
+  border: 1.5px dashed var(--blue-700);
+  border-radius: 20px;
+  background: var(--blue-50);
+  color: var(--blue-700);
+  font: inherit;
+  cursor: pointer;
+}
+
+.dropzone:hover {
+  background: var(--blue-100);
+}
+
+.dropzone:focus-visible {
+  outline: 3px solid var(--navy-900);
+  outline-offset: 2px;
+}
+
+.dropTitle {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.dropHint {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.uploaded {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.uploadedItem {
+  position: relative;
+}
+
+.uploadedImg {
+  display: block;
+  width: 140px;
+  height: 100px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.removePhoto {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(11, 27, 77, 0.8);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.removePhoto:focus-visible {
+  outline: 3px solid var(--yellow-400);
+}
+
+/* ---------- Fields ---------- */
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.invalid,
+.invalid:focus-within {
+  border-color: var(--red-500);
+}
+
+.peso {
+  margin-right: -8px;
+  color: var(--navy-900);
+  font-weight: 500;
+}
+
+.stepper {
+  justify-content: space-between;
+  padding: 0 14px;
+  min-height: 56px;
+}
+
+.stepMinus,
+.stepPlus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.stepMinus {
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  color: var(--navy-900);
+}
+
+.stepPlus {
+  border: none;
+  background: var(--blue-700);
+  color: var(--white);
+}
+
+.stepMinus:disabled,
+.stepPlus:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stepMinus:focus-visible,
+.stepPlus:focus-visible {
+  outline: 3px solid var(--navy-900);
+  outline-offset: 2px;
+}
+
+.stepValue {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.save {
+  flex: 1;
+}
+
+/* ---------- Live preview ---------- */
+
+.preview {
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.previewLabel {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-500);
+}
+
+.previewCard {
+  overflow: hidden;
+  border-radius: 24px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.previewPhoto {
+  width: 100%;
+  aspect-ratio: 400 / 220;
+}
+
+.previewBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+}
+
+.previewName {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.previewChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 15px;
+}
+
+.tagPink   { background: var(--pink-50); }
+.tagBlue   { background: var(--blue-50); }
+.tagGreen  { background: var(--green-50); }
+.tagGray   { background: var(--page-bg); }
+.tagYellow { background: var(--yellow-50); }
+
+.previewNotice {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+@media (max-width: 1040px) {
+  .layout { grid-template-columns: 1fr; }
+  .preview { position: static; order: -1; }
+}
+
+@media (max-width: 640px) {
+  .form { padding: 22px; }
+  .twoCol { grid-template-columns: 1fr; }
+  .uploadedImg { width: calc(50vw - 50px); height: auto; aspect-ratio: 140 / 100; }
+}

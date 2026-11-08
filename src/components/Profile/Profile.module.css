@@ -1,0 +1,334 @@
+/* B11 · Boarder Profile (17:476) / D11 · Owner Profile (12:342). */
+
+/* ---------- Cover (1200×220) with the head overlapping it by 70px ---------- */
+
+.coverAndHead {
+  display: flex;
+  flex-direction: column;
+}
+
+.cover {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  border-radius: 32px;
+  background: var(--blue-700);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.blobYellow { width: 300px; height: 300px; top: -110px; right: -40px; background: var(--yellow-400); }
+.blobRed    { width: 110px; height: 110px; bottom: -30px; right: 280px; background: var(--red-500); }
+.blobBlue   { width: 130px; height: 130px; bottom: -50px; left: -30px; background: var(--blue-500); }
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+  margin-top: -70px;
+  padding: 0 40px;
+}
+
+.avatarWrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 150px;
+  height: 150px;
+}
+
+.bigAvatar {
+  border: 6px solid var(--white);
+}
+
+.changePhoto {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 4px solid var(--white);
+  border-radius: 50%;
+  background: var(--navy-900);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.changePhoto:focus-visible {
+  outline: 3px solid var(--blue-700);
+  outline-offset: 2px;
+}
+
+.headText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding-bottom: 10px;
+}
+
+.name {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 41px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.editButton {
+  margin-bottom: 10px;
+}
+
+/* ---------- Columns (752 + 420, gap 28) ---------- */
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  gap: 28px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.mainColumn,
+.sideColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.bio,
+.muted {
+  margin: 0;
+  font-size: 15px;
+  line-height: 24px;
+  color: var(--gray-500);
+}
+
+.muted {
+  font-size: 14px;
+  line-height: 21px;
+}
+
+/* ---------- Listing rows (reservation / my boarding houses) ---------- */
+
+.listingRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--page-bg);
+}
+
+.listingPhoto {
+  width: 130px;
+  height: 96px;
+}
+
+.listingText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.listingName {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 19px;
+}
+
+.listingMeta {
+  margin: 0;
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--gray-500);
+}
+
+.listingPrice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 18px;
+  color: var(--blue-700);
+}
+
+.smallChip {
+  padding: 6px 12px;
+  font-size: 11px;
+  line-height: 13px;
+}
+
+.rowEdit {
+  width: 42px;
+  height: 42px;
+  background: var(--white);
+}
+
+.addButton {
+  align-self: flex-start;
+}
+
+.myReview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--page-bg);
+}
+
+/* ---------- Info rows (Details / Socials) ---------- */
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.infoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--blue-50);
+  color: var(--blue-700);
+}
+
+.infoText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.infoLabel {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 13px;
+  color: var(--gray-500);
+}
+
+.infoValue {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.addChip {
+  padding: 6px 12px;
+  border: none;
+  background: var(--blue-700);
+  color: var(--white);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 13px;
+  cursor: pointer;
+}
+
+.addChip:focus-visible {
+  outline: 3px solid var(--navy-900);
+  outline-offset: 2px;
+}
+
+/* ---------- Owner stats ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 22px 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.statValue {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 31px;
+  color: var(--blue-700);
+}
+
+.statRed {
+  color: var(--red-500);
+}
+
+.statLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+/* ---------- Avatar stack ---------- */
+
+.stackRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.stack {
+  display: flex;
+}
+
+.stackAvatar {
+  border: 3px solid var(--white);
+}
+
+.stackAvatar + .stackAvatar {
+  margin-left: -10px;
+}
+
+.stackLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1000px) {
+  .columns { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .cover { height: 160px; border-radius: 24px; }
+  .head { flex-direction: column; align-items: flex-start; padding: 0 16px; gap: 12px; }
+  .avatarWrap { width: 120px; height: 120px; }
+  .bigAvatar { width: 116px !important; height: 116px !important; font-size: 46px !important; }
+  .headText { padding-bottom: 0; }
+  .editButton { margin-bottom: 0; }
+  .name { font-size: 28px; line-height: 34px; }
+  .listingRow { flex-wrap: wrap; }
+  .listingPhoto { width: 100%; height: auto; aspect-ratio: 130 / 96; }
+}

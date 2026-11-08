@@ -1,0 +1,172 @@
+/* Figma "TopBar" (1440×76) from B3 · Boarder Home (15:115) and D5 · Owner Home (7:2). */
+.topBar {
+  --blue-700: #1d4ed8;
+  --blue-50: #e8f0ff;
+  --navy-900: #0b1b4d;
+  --red-500: #e5383b;
+  --yellow-400: #ffc72c;
+  --ink: #0a0a0a;
+  --green-600: #16a34a;
+  --gray-500: #6b7280;
+  --page-bg: #f4f7fe;
+  --white: #ffffff;
+
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding: 16px var(--layout-inline);
+  background: var(--white);
+  box-shadow: 0 6px 18px rgba(13, 26, 77, 0.12);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--navy-900);
+}
+
+.topBar *,
+.topBar *::before,
+.topBar *::after {
+  box-sizing: border-box;
+}
+
+.brand,
+.account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: var(--blue-700);
+  color: var(--white);
+}
+
+.brandText,
+.accountText {
+  display: flex;
+  flex-direction: column;
+}
+
+.brandName {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 22px;
+}
+
+.brandTagline {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 13px;
+  color: var(--gray-500);
+}
+
+.nav {
+  display: flex;
+  gap: 6px;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border: none;
+  border-radius: 99px;
+  background: transparent;
+  color: var(--gray-500);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 18px;
+  cursor: pointer;
+  transition: background 0.2s ease-out, color 0.2s ease-out;
+}
+
+.navLink:hover {
+  background: var(--page-bg);
+  color: var(--navy-900);
+}
+
+.navLinkActive,
+.navLinkActive:hover {
+  background: var(--blue-50);
+  color: var(--blue-700);
+  font-weight: 700;
+}
+
+.logout {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 99px;
+  background: var(--green-600);
+  color: var(--white);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 13px;
+  cursor: pointer;
+}
+
+.logout:hover {
+  background: #128a3e;
+}
+
+.logoutOwner,
+.logoutOwner:hover {
+  background: var(--yellow-400);
+  color: var(--ink);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--red-500);
+  color: var(--white);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.avatarOwner {
+  background: var(--blue-700);
+}
+
+.accountName {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 17px;
+}
+
+.accountRole {
+  font-size: 11px;
+  line-height: 13px;
+  color: var(--gray-500);
+}
+
+.navLink:focus-visible,
+.logout:focus-visible {
+  outline: 3px solid var(--navy-900);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1080px) {
+  .nav { order: 3; width: 100%; justify-content: center; }
+}
+
+@media (max-width: 640px) {
+  .navLink { padding: 10px 14px; }
+  .accountText { display: none; }
+}

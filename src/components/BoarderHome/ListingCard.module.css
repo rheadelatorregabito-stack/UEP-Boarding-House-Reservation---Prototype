@@ -1,0 +1,314 @@
+/* Figma "Card: …" frames (384 wide) in B3 · Boarder Home. Colour tokens are inherited from BoarderHome. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--card-radius, 24px);
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Photo (384×208) ---------- */
+
+.media {
+  position: relative;
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 384 / 208;
+  overflow: hidden;
+  background: var(--sky);
+}
+
+.photo > span {
+  position: absolute;
+}
+
+/* Positions are percentages of the 384×208 Figma frame */
+.ground {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 25.96%;
+  background: var(--green-400);
+}
+
+.sun {
+  left: 79.95%;
+  top: 10.1%;
+  width: 8.59%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--yellow-400);
+}
+
+.houseBody {
+  left: 25%;
+  top: 39.9%;
+  width: 50%;
+  height: 36.06%;
+  background: var(--body);
+}
+
+.roof {
+  left: 20.05%;
+  top: 20.67%;
+  width: 59.9%;
+  height: 20.19%;
+  background: var(--roof);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.door,
+.window {
+  position: absolute;
+  border-radius: 3px;
+}
+
+.door {
+  left: 42.19%;
+  bottom: 0;
+  width: 16.15%;
+  height: 54.67%;
+  background: var(--navy-900);
+}
+
+.window {
+  top: 25.33%;
+  width: 19.79%;
+  height: 21.33%;
+  background: var(--sky-300);
+}
+
+.windowLeft  { left: 9.9%; }
+.windowRight { right: 10.42%; }
+
+/* ---------- Chips ---------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 15px;
+  color: var(--navy-900);
+  white-space: nowrap;
+}
+
+.zoneChip,
+.slotsChip {
+  position: absolute;
+  top: 16px;
+  font-weight: 700;
+}
+
+.zoneChip {
+  left: 16px;
+  background: var(--white);
+}
+
+.zonePin {
+  display: flex;
+  color: var(--red-500);
+}
+
+.slotsChip {
+  right: 16px;
+  background: var(--green-600);
+  color: var(--white);
+}
+
+.slotsLow  { background: var(--red-500); }
+.slotsFull { background: var(--gray-500); }
+
+/* ---------- Body ---------- */
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  padding: var(--card-pad, 24px);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  flex: 1;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+  color: var(--navy-900);
+}
+
+.rating {
+  flex-shrink: 0;
+  background: var(--blue-50);
+  color: var(--blue-700);
+  font-weight: 700;
+}
+
+.star {
+  display: flex;
+  color: var(--yellow-400);
+}
+
+.location,
+.owner {
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.location {
+  gap: 6px;
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--gray-500);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gender_girls { background: #fde8f1; }
+.gender_boys  { background: var(--blue-50); }
+.gender_mixed { background: var(--green-50); }
+.room_shared  { background: var(--page-bg); }
+.room_studio  { background: var(--yellow-50); }
+
+.owner {
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 15px;
+  color: var(--navy-900);
+}
+
+.ownerAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--blue-700);
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ---------- Footer ---------- */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto; /* pins price row to the bottom so cards in a row line up */
+  padding-top: 16px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0;
+}
+
+.priceValue {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 29px;
+  color: var(--blue-700);
+}
+
+.priceUnit {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.messageButton,
+.viewButton {
+  border: none;
+  border-radius: 14px;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.messageButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: var(--blue-50);
+  color: var(--blue-700);
+}
+
+.messageButton:hover {
+  background: var(--blue-100);
+}
+
+.viewButton {
+  padding: 12px 20px;
+  background: var(--blue-700);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 17px;
+}
+
+.viewButton:hover {
+  background: #1a44c2;
+  transform: translateY(-1px);
+}
+
+.viewButtonCompact {
+  padding: 11px 20px;
+  border-radius: 12px;
+}
+
+.ownerNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 13px;
+  color: var(--gray-500);
+}
+
+.ownerNote svg {
+  flex-shrink: 0;
+}
+
+.messageButton:focus-visible,
+.viewButton:focus-visible {
+  outline: 3px solid var(--navy-900);
+  outline-offset: 2px;
+}
