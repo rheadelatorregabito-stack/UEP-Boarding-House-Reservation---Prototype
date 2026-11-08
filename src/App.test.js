@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import App from './App';
 
 beforeAll(() => {
@@ -162,10 +162,24 @@ test('auto-replies in a chat with the owner also reach the owner, who gets none 
   expect(autoReplies()).toHaveLength(1);
 });
 
+// The fake camera starts only when a test calls turnOnCamera(), inside act(), so React sees the update.
+let pendingCameras = [];
+const turnOnCamera = async () => {
+  await screen.findByRole('heading', { name: 'Send your credentials' });
+  await act(async () => {
+    pendingCameras.splice(0).forEach((start) => start());
+  });
+  expect(screen.getByText('Camera on')).toBeInTheDocument();
+};
+
 const mockCamera = () => {
+  pendingCameras = [];
   const track = { stop: () => {}, addEventListener: () => {} };
   const stream = { getTracks: () => [track], getVideoTracks: () => [track] };
-  Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => stream } });
+  Object.defineProperty(navigator, 'mediaDevices', {
+    configurable: true,
+    value: { getUserMedia: () => new Promise((resolve) => pendingCameras.push(() => resolve(stream))) },
+  });
   Object.defineProperty(HTMLVideoElement.prototype, 'videoWidth', { configurable: true, get: () => 640 });
   Object.defineProperty(HTMLVideoElement.prototype, 'videoHeight', { configurable: true, get: () => 480 });
   HTMLCanvasElement.prototype.getContext = () => ({ drawImage: () => {} });
@@ -185,15 +199,14 @@ test('a new owner must send credentials before reaching the dashboard', async ()
 
   fireEvent.click(screen.getByRole('button', { name: /log in as owner/i }));
   submitOwnerLogin();
-  expect(await screen.findByRole('heading', { name: 'Send your credentials' })).toBeInTheDocument();
-  expect(await screen.findByText('Camera on')).toBeInTheDocument();
+  await turnOnCamera();
   expect(screen.queryByRole('navigation', { name: 'Main' })).not.toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Go back' }));
   expect(screen.getByRole('button', { name: /^log in$/i })).toBeInTheDocument();
 
   submitOwnerLogin();
-  await screen.findByText('Camera on');
+  await turnOnCamera();
   fireEvent.click(screen.getByRole('button', { name: /^capture/i }));
   await waitFor(() => expect(screen.getByRole('button', { name: /^capture/i })).toBeDisabled());
   fireEvent.click(screen.getByRole('button', { name: 'Send credentials' }));
@@ -206,4 +219,75 @@ test('a new owner must send credentials before reaching the dashboard', async ()
   await logIn('owner', 'pedro.cruz@email.com');
   goTo(/profile/i);
   expect(screen.getByText('Credentials under review')).toBeInTheDocument();
+});
+
+const registerOwner = async ({ name, email, password }) => {
+  fireEvent.click(screen.getByRole('button', { name: /log in as owner/i }));
+  fireEvent.click(screen.getByRole('button', { name: /create an account/i }));
+  fireEvent.change(screen.getByLabelText(/^full name$/i), { target: { value: name } });
+  fireEvent.change(screen.getByLabelText(/^email$/i), { target: { value: email } });
+  fireEvent.change(screen.getByLabelText(/^contact number$/i), { target: { value: '09171234567' } });
+  fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: password } });
+  fireEvent.change(screen.getByLabelText(/^confirm password$/i), { target: { value: password } });
+  fireEvent.click(screen.getByRole('button', { name: /^create account$/i }));
+};
+
+test('a newly registered owner goes straight to the camera step, then the dashboard', async () => {
+  mockCamera();
+  render(<App />);
+
+  await registerOwner({ name: 'Rosa Villanueva', email: 'rosa@email.com', password: 'boarding1' });
+  await turnOnCamera();
+
+  fireEvent.click(screen.getByRole('button', { name: /^capture/i }));
+  await waitFor(() => expect(screen.getByRole('button', { name: /^capture/i })).toBeDisabled());
+  fireEvent.click(screen.getByRole('button', { name: 'Send credentials' }));
+  fireEvent.click(await screen.findByRole('button', { name: /continue/i }, { timeout: 3000 }));
+
+  expect(await screen.findByRole('navigation', { name: 'Main' })).toBeInTheDocument();
+  expect(screen.getAllByText('Rosa Villanueva').length).toBeGreaterThan(0);
+});
+
+test('an owner can reset a forgotten password with a verification code', async () => {
+  mockCamera();
+  render(<App />);
+  await registerOwner({ name: 'Rosa Villanueva', email: 'rosa@email.com', password: 'boarding1' });
+  await turnOnCamera();
+  fireEvent.click(screen.getByRole('button', { name: 'Go back' }));
+
+  fireEvent.click(screen.getByRole('button', { name: 'Forgot password?' }));
+  fireEvent.change(screen.getByLabelText(/^email$/i), { target: { value: 'rosa@email.com' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Send verification code' }));
+
+  const demoBox = await screen.findByRole('note');
+  const code = within(demoBox).getByText(/^\d{6}$/).textContent;
+
+  const wrong = code === '000000' ? '111111' : '000000';
+  fireEvent.change(screen.getByLabelText('Verification code'), { target: { value: wrong } });
+  fireEvent.click(screen.getByRole('button', { name: 'Verify code' }));
+  expect(screen.getByText(/that code isn’t right\. 4 tries left/i)).toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText('Verification code'), { target: { value: code } });
+  fireEvent.click(screen.getByRole('button', { name: 'Verify code' }));
+
+  fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'short' } });
+  fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'short' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save new password' }));
+  expect(screen.getByText('Use at least 8 characters.')).toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'newpass123' } });
+  fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'newpass123' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Save new password' }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Back to log in' }));
+
+  expect(screen.getByText(/your password has been updated/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/^email$/i)).toHaveValue('rosa@email.com');
+
+  fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'boarding1' } });
+  fireEvent.click(screen.getByRole('button', { name: /^log in$/i }));
+  expect(await screen.findByText(/incorrect password/i)).toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'newpass123' } });
+  fireEvent.click(screen.getByRole('button', { name: /^log in$/i }));
+  await turnOnCamera();
 });

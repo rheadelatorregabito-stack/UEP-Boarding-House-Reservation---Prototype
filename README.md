@@ -31,7 +31,8 @@ The app has two roles:
 | Feature | Description |
 |---|---|
 | Register and log in | Separate owner account and login. |
-| Credential verification | On first login, the owner photographs a valid ID or business permit with the device camera. The dashboard opens only after the credentials are sent. |
+| Credential verification | After registering, or on the first login, the owner photographs a valid ID or business permit with the device camera. The dashboard opens only after the credentials are sent. |
+| Forgot password | Three-step recovery: enter email, enter a 6-digit verification code (expires in 10 minutes, 5 tries), then set a new password. |
 | Browse (view-only) | See other owners' listings, without reserving or messaging. |
 | Post and edit listings | Add up to 10 photos, rent, slots, room type, amenities and a description, with a live preview. |
 | Messages | Reply to students. Messages are linked to the boarder's inbox in both directions. |
@@ -96,7 +97,8 @@ To log in as the sample owner with the sample listings and chats, use `lourdes.c
 3. **Owner:** in a second browser tab, log in as `lourdes.cabal@email.com` and open Messages. The student's messages are already there; reply and watch it appear in the boarder's tab.
 4. **Reviews:** as the boarder, request to review the house; as the owner, accept it; then write the review as the boarder.
 5. **Post a listing:** as the owner, create a new post with photos and check the live preview.
-6. **Owner verification:** log in as a new owner (e.g. `pedro.cruz@email.com`), photograph an ID with the camera and send it. The dashboard opens only after that.
+6. **Owner verification:** register a new owner (or log in as e.g. `pedro.cruz@email.com`), photograph an ID with the camera and send it. The dashboard opens only after that.
+7. **Forgot password:** on the owner login, click **Forgot password?**, enter the registered email, type the code shown in the yellow demo box, and set a new password. The old password stops working.
 
 **To reset the demo data:** open the browser DevTools → Application → Local Storage and delete the `boardease:v1:*` keys, then refresh.
 
@@ -107,7 +109,7 @@ To log in as the sample owner with the sample listings and chats, use `lourdes.c
 ```
 src/
 ├── App.js                    App state, login/session handling and screen navigation
-├── App.test.js               Automated tests (login, registration, messaging, auto-reply, owner credentials)
+├── App.test.js               Automated tests (login, registration, messaging, auto-reply, owner credentials, password recovery)
 ├── hooks/
 │   └── usePersistentState.js useState that saves to localStorage and syncs across tabs
 ├── data/
@@ -159,12 +161,15 @@ npm test
 6. The auto-reply answers typed questions, and stays silent when it can't help.
 7. Auto-replies reach the owner's inbox, and the owner's own messages never trigger one.
 8. A new owner must send credentials (using a simulated camera) before reaching the dashboard, and goes straight to the dashboard on later logins.
+9. A newly registered owner goes straight to the camera step, then the dashboard.
+10. An owner resets a forgotten password: a wrong code is rejected, a weak password is rejected, the old password stops working and the new one logs in.
 
 ---
 
 ## Limitations and future work
 
 - **No backend:** data lives in the browser only. A real system would use a server and database, with passwords hashed instead of stored in localStorage.
+- **No email is sent for password recovery:** there is no email service, so the verification code is shown on screen in a labelled demo box. A real system would email it.
 - **Credentials are not really reviewed:** the photo upload is simulated (no server receives it), and no admin approves owners, so they stay "under review".
 - **One boarder at a time:** the owner's inbox treats the logged-in boarder as the single student in linked chats.
 - **Storage size:** uploaded photos are saved as text and browsers allow about 5 MB of localStorage, so many large photos can stop new changes from being saved.

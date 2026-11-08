@@ -21,10 +21,10 @@ const CameraIcon = () => (
   </Icon>
 );
 
-const DOCUMENT_TYPES = ['Valid ID', 'Business Permit', 'Brgy. Clearance'];
+const DOCUMENT_TYPES = ['Valid ID', 'Business Permit'];
 
 const STEPS = [
-  'Choose the document type',
+  'Choose Valid ID or Business Permit',
   'Align it inside the frame',
   'Capture and send for review',
 ];

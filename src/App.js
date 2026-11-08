@@ -242,15 +242,38 @@ function App() {
   const setRequestStatus = (listingId, status) =>
     setReviewRequests((prev) => ({ ...prev, [listingId]: { by: prev[listingId]?.by ?? boarderName, status } }));
 
-  // Save the new account, then send the user to their login screen with the email pre-filled.
+  // Sign an owner in. Owners who haven't sent credentials go to the camera step before the dashboard.
+  const startOwnerSession = ({ email, name, phone }) => {
+    const needsCredentials = !ownerCredentials[accountKey(email)];
+    setOwner({ email, name, needsCredentials });
+    // Same owner logging back in keeps their edits; anyone else starts without the sample owner's details.
+    setOwnerProfile((p) => (accountKey(p.email) === accountKey(email)
+      ? { ...p, name, ...(phone && { phone }) }
+      : blankOwnerProfile({ name, email, phone })));
+    setSignup(null);
+    go(needsCredentials ? 'owner-credentials' : 'owner-home');
+  };
+
+  // Save the new account. New owners are signed in and sent to the camera step; boarders go to their login screen.
   const register = (role) => ({ email, fullName, contactNumber, password }) => {
     setAccounts((prev) => ({
       ...prev,
       [role]: { ...prev[role], [accountKey(email)]: { email, fullName, contactNumber, password } },
     }));
+    if (role === 'owner') {
+      startOwnerSession({ email, name: fullName, phone: contactNumber });
+      return;
+    }
     setSignup({ role, email });
-    go(role === 'owner' ? 'owner-login' : 'boarder-login');
+    go('boarder-login');
   };
+
+  // Recovery never reveals whether an email is registered; unregistered emails already log in with any password.
+  const resetPassword = (role) => ({ email, password }) => setAccounts((prev) => {
+    const account = prev[role][accountKey(email)];
+    if (!account) return prev;
+    return { ...prev, [role]: { ...prev[role], [accountKey(email)]: { ...account, password } } };
+  });
 
   // Registered emails must use their password; unknown emails still log in (demo mode, no backend).
   const findAccount = (role, email, password) => {
@@ -323,16 +346,13 @@ function App() {
           onBack={() => { setSignup(null); go('welcome'); }}
           onSubmit={({ email, password }) => {
             const account = findAccount('owner', email, password);
-            const name = account?.fullName ?? displayNameFor({ email, role: 'owner' });
-            const needsCredentials = !ownerCredentials[accountKey(email)];
-            setOwner({ email, name, needsCredentials });
-            // Same owner logging back in keeps their edits; anyone else starts without the sample owner's details.
-            setOwnerProfile((p) => (accountKey(p.email) === accountKey(email)
-              ? { ...p, name, ...(account && { phone: account.contactNumber }) }
-              : blankOwnerProfile({ name, email, phone: account?.contactNumber })));
-            setSignup(null);
-            go(needsCredentials ? 'owner-credentials' : 'owner-home');
+            startOwnerSession({
+              email,
+              name: account?.fullName ?? displayNameFor({ email, role: 'owner' }),
+              phone: account?.contactNumber,
+            });
           }}
+          onResetPassword={resetPassword('owner')}
           onCreateAccount={() => go('owner-register')}
         />
       );
